@@ -1,0 +1,36 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "deploy:firebase": "pnpm i && pnpm run build --preset=firebase && firebase deploy --only functions:server,hosting"
+  },
+  "dependencies": {
+    "@firebase/app-types": "^0.9.2",
+    "@nuxt/eslint": "^0.6.1",
+    "@vueuse/core": "^11.2.0",
+    "firebase": "^10.0.0",
+    "firebase-functions": "^5.0.0",
+    "nuxt": "^3.7.0",
+    "nuxt-vuefire": "^1.0.4",
+    "vue": "latest",
+    "vue-router": "latest",
+    "vuefire": "^3.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@nuxtjs/i18n": "9.0.0-rc.2",
+    "@pinia/nuxt": "^0.5.5",
+    "@vueuse/nuxt": "^11.2.0",
+    "typescript": "^5.6.3",
+    "vue-tsc": "^2.1.10",
+    "vuetify-nuxt-module": "^0.18.3"
+  }
+}
