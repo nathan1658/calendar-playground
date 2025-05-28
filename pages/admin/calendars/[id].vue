@@ -240,9 +240,9 @@ interface Calendar {
   updatedAt: string;
 }
 
-// Set page meta
+// Set page meta - removed admin layout, will use default
 definePageMeta({
-  layout: "admin",
+  middleware: "admin",
 });
 
 const route = useRoute();

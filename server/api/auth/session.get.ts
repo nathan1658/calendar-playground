@@ -11,14 +11,7 @@ export default defineEventHandler(async event => {
   try {
     const config = useRuntimeConfig();
 
-    // Debug: log all cookies received
-    const allCookies = parseCookies(event);
-    console.log("Session endpoint - all cookies received:", allCookies);
-
     const token = getRequestHeader(event, "Authorization")?.split(" ")[1];
-    console.log("Session endpoint - auth-token cookie:", token ? "exists" : "not found");
-
-    console.log("Token:", token);
     if (!token) {
       throw createError({
         statusCode: 401,
@@ -37,8 +30,6 @@ export default defineEventHandler(async event => {
         statusMessage: "User not found",
       });
     }
-
-    console.log("Session endpoint - successfully authenticated user:", user.username);
 
     return {
       user: {

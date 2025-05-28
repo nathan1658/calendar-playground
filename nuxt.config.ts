@@ -21,10 +21,7 @@ export default defineNuxtConfig({
     isEnabled: true,
     disableServerSideAuth: false,
     globalAppMiddleware: true,
-    sessionRefresh: {
-      enablePeriodically: true,
-      enableOnWindowFocus: true,
-    },
+
     provider: {
       type: "local",
       endpoints: {

@@ -23,7 +23,6 @@ export default defineNuxtRouteMiddleware(async () => {
 
   // Check admin role - cast session data to access user properties
   const sessionData = data.value as unknown as { user: { roles: string[] } };
-
   if (!sessionData?.user?.roles?.includes("admin")) {
     throw createError({
       statusCode: 403,

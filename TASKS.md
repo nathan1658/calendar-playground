@@ -148,72 +148,72 @@
 
 | Task ID | Task                                          | Complexity | Dependencies | Estimated Time | Completed |
 | ------- | --------------------------------------------- | ---------- | ------------ | -------------- | --------- |
-| P2.1    | Create Calendar model with permissions schema | High       | P1.4         | 2-3 hours      | ☐         |
-| P2.2    | Implement Calendar CRUD API endpoints         | High       | P2.1         | 4-5 hours      | ☐         |
-| P2.3    | Create admin middleware                       | Low        | P1.8         | 30 minutes     | ☐         |
-| P2.4    | Implement User management API endpoints       | Medium     | P1.4, P2.3   | 2-3 hours      | ☐         |
-| P2.5    | Create calendar management UI (admin)         | Medium     | P2.2         | 3-4 hours      | ☐         |
-| P2.6    | Create user management UI (admin)             | Medium     | P2.4         | 3-4 hours      | ☐         |
-| P2.7    | Implement permission management UI            | Medium     | P2.2, P2.5   | 2-3 hours      | ☐         |
+| P2.1    | Create Calendar model with permissions schema | High       | P1.4         | 2-3 hours      | ✅        |
+| P2.2    | Implement Calendar CRUD API endpoints         | High       | P2.1         | 4-5 hours      | ✅        |
+| P2.3    | Create admin middleware                       | Low        | P1.8         | 30 minutes     | ✅        |
+| P2.4    | Implement User management API endpoints       | Medium     | P1.4, P2.3   | 2-3 hours      | ✅        |
+| P2.5    | Create calendar management UI (admin)         | Medium     | P2.2         | 3-4 hours      | ✅        |
+| P2.6    | Create user management UI (admin)             | Medium     | P2.4         | 3-4 hours      | ✅        |
+| P2.7    | Implement permission management UI            | Medium     | P2.2, P2.5   | 2-3 hours      | ✅        |
 
 ### Phase 2 Detailed Tasks:
 
 #### P2.1: Create Calendar model
 
-- [ ] Create `server/models/Calendar.model.ts`
-- [ ] Implement calendar permission sub-schema
-- [ ] Add calendar schema with name, category, ownerId, permissions
-- [ ] Add proper indexes and validation
-- [ ] Create TypeScript interfaces
+- [x] Create `server/models/Calendar.model.ts`
+- [x] Implement calendar permission sub-schema
+- [x] Add calendar schema with name, category, ownerId, permissions
+- [x] Add proper indexes and validation
+- [x] Create TypeScript interfaces
 
 #### P2.2: Implement Calendar CRUD API endpoints
 
-- [ ] Create `server/api/calendars/index.post.ts` (create calendar)
-- [ ] Create `server/api/calendars/index.get.ts` (list calendars)
-- [ ] Create `server/api/calendars/[id].get.ts` (get calendar)
-- [ ] Create `server/api/calendars/[id].put.ts` (update calendar)
-- [ ] Create `server/api/calendars/[id].delete.ts` (delete calendar)
-- [ ] Create `server/api/calendars/[id]/permissions.put.ts` (manage permissions)
-- [ ] Implement proper authorization checks
+- [x] Create `server/api/calendars/index.post.ts` (create calendar)
+- [x] Create `server/api/calendars/index.get.ts` (list calendars)
+- [x] Create `server/api/calendars/[id].get.ts` (get calendar)
+- [x] Create `server/api/calendars/[id].put.ts` (update calendar)
+- [x] Create `server/api/calendars/[id].delete.ts` (delete calendar)
+- [x] Create `server/api/calendars/[id]/permissions.put.ts` (manage permissions)
+- [x] Implement proper authorization checks
 
 #### P2.3: Create admin middleware
 
-- [ ] Create `middleware/admin.ts`
-- [ ] Implement admin role check
-- [ ] Add error handling for unauthorized access
+- [x] Create `middleware/admin.ts`
+- [x] Implement admin role check
+- [x] Add error handling for unauthorized access
 
 #### P2.4: Implement User management API endpoints
 
-- [ ] Create `server/api/users/index.get.ts` (list users)
-- [ ] Create `server/api/users/[id].put.ts` (update user)
-- [ ] Create `server/api/users/[id].delete.ts` (delete user)
-- [ ] Add admin authorization checks
+- [x] Create `server/api/users/index.get.ts` (list users)
+- [x] Create `server/api/users/[id].put.ts` (update user)
+- [x] Create `server/api/users/[id].delete.ts` (delete user)
+- [x] Add admin authorization checks
 
 #### P2.5: Create calendar management UI
 
-- [ ] Create `pages/calendars/manage.vue`
-- [ ] Implement calendar list component
-- [ ] Add create calendar form
-- [ ] Add edit calendar functionality
-- [ ] Add delete calendar with confirmation
-- [ ] Apply admin middleware to page
+- [x] Create `pages/admin/calendars/index.vue`
+- [x] Implement calendar list component
+- [x] Add create calendar form
+- [x] Add edit calendar functionality
+- [x] Add delete calendar with confirmation
+- [x] Apply admin middleware to page
 
 #### P2.6: Create user management UI
 
-- [ ] Create `pages/users/manage.vue`
-- [ ] Implement user list component
-- [ ] Add user creation form (if needed)
-- [ ] Add user edit functionality
-- [ ] Add user deletion with confirmation
-- [ ] Apply admin middleware to page
+- [x] Create `pages/admin/users.vue`
+- [x] Implement user list component
+- [x] Add user creation form
+- [x] Add user edit functionality
+- [x] Add user deletion with confirmation
+- [x] Apply admin middleware to page
 
 #### P2.7: Implement permission management UI
 
-- [ ] Create `components/PermissionManager.vue`
-- [ ] Implement user permission assignment interface
-- [ ] Add permission level selection (view/edit)
-- [ ] Integrate with calendar management page
-- [ ] Add bulk permission operations
+- [x] Create `components/admin/CalendarPermissionsDialog.vue`
+- [x] Implement user permission assignment interface
+- [x] Add permission level selection (view/edit)
+- [x] Integrate with calendar management page
+- [x] Add bulk permission operations
 
 ---
 

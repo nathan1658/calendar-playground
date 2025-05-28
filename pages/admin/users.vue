@@ -3,14 +3,14 @@
     <VRow>
       <VCol cols="12">
         <div class="d-flex justify-space-between align-center mb-6">
-          <h1 class="text-h4 font-weight-bold">Calendar Management</h1>
+          <h1 class="text-h4 font-weight-bold">User Management</h1>
           <VBreadcrumbs
             :items="breadcrumbs"
             divider="/"
           />
         </div>
 
-        <AdminCalendarList />
+        <AdminUserList />
       </VCol>
     </VRow>
   </VContainer>
@@ -29,14 +29,14 @@ const breadcrumbs = [
     href: "/admin",
   },
   {
-    title: "Calendars",
+    title: "Users",
     disabled: true,
-    href: "/admin/calendars",
+    href: "/admin/users",
   },
 ];
 
 // Set page head
 useHead({
-  title: "Calendar Management - Admin",
+  title: "User Management - Admin",
 });
 </script>
