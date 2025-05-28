@@ -20,17 +20,6 @@ yarn install
 bun install
 ```
 
-### Example .env file
-
-```
-FIREBASE_API_KEY=xxxxxxxxxxxx
-FIREBASE_AUTH_DOMAIN=xxxxxxxxxxxx
-FIREBASE_PROJECT_ID=xxxxxxxxxxxx
-FIREBASE_STORAGE_BUCKET=xxxxxxxxxxxx
-FIREBASE_MESSAGING_SENDER_ID=xxxxxxxxxxxx
-FIREBASE_APP_ID=xxxxxxxxxxxx
-```
-
 ## Development Server
 
 Start the development server on `http://localhost:3000`:
@@ -84,23 +73,3 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-
-# Deployment
-
-https://nuxt.com/deploy/firebase
-
-Example firebase.json file
-
-```
-{
-  "functions": { "source": ".output/server" },
-  "hosting": [
-    {
-      "site": "<PROJECT_ID>",
-      "public": ".output/public",
-      "cleanUrls": true,
-      "rewrites": [{ "source": "**", "function": "server" }]
-    }
-  ]
-}
-```
