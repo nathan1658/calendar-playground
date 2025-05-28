@@ -234,7 +234,6 @@ const handleLogout = async () => {
   showMenu.value = false;
   try {
     await signOut();
-    await navigateTo("/login");
   } catch (error) {
     console.error("Logout error:", error);
   }
