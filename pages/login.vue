@@ -123,15 +123,11 @@ const handleLogin = async () => {
   try {
     isLoading.value = true;
 
-    await signIn(
-      {
-        username: form.value.username,
-        password: form.value.password,
-      },
-      {
-        callbackUrl: "/",
-      },
-    );
+    await signIn("credentials", {
+      username: form.value.username,
+      password: form.value.password,
+      callbackUrl: "/",
+    });
   } catch (error: unknown) {
     console.error("Login error:", error);
     errorMessage.value =
