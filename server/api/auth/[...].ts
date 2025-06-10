@@ -20,6 +20,7 @@ export default NuxtAuthHandler({
       console.log("jwt", token, user);
       const isSignIn = user ? true : false;
       if (isSignIn && user) {
+        token.id = user.id;
         token.username = user.username;
         token.displayName = user.displayName;
         token.roles = user.roles;
@@ -30,6 +31,7 @@ export default NuxtAuthHandler({
     session: async ({ session, token }) => {
       console.log("session", session, token);
       const user = {
+        id: token.id || "",
         username: token.username || "",
         email: token.email,
         displayName: token.displayName,
