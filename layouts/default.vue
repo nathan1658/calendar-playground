@@ -1,208 +1,165 @@
 <template>
   <VApp>
-    <VNavigationDrawer
-      v-model="drawer"
-      app
-      clipped
-      :width="280"
-    >
-      <!-- Enhanced User Section -->
-      <div v-if="currentUser" class="pa-4 border-b">
-        <VCard variant="outlined" class="pa-3 bg-grey-lighten-5">
-          <div class="d-flex align-center">
-            <VAvatar
-              size="44"
-              color="primary"
-              class="mr-3"
-            >
-              <span class="text-h6 font-weight-bold">
-                {{ (currentUser.displayName || currentUser.username).charAt(0).toUpperCase() }}
-              </span>
-            </VAvatar>
-            <div class="flex-grow-1">
-              <div class="text-body-2 font-weight-bold text-grey-darken-4">
-                {{ currentUser.displayName || currentUser.username }}
-              </div>
-              <div class="d-flex align-center mt-1">
-                <VIcon 
-                  :icon="isAdmin ? 'mdi-shield-crown' : 'mdi-account'" 
-                  size="12" 
-                  :color="isAdmin ? 'warning' : 'grey'"
-                  class="mr-1"
-                />
-                <span class="text-caption text-grey">{{ isAdmin ? "Administrator" : "User" }}</span>
-              </div>
-            </div>
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Enhanced Main Navigation -->
-      <VList class="pa-2">
-        <VListSubheader class="text-overline font-weight-bold text-primary">Main</VListSubheader>
-        <VListItem
-          to="/"
-          prepend-icon="mdi-view-dashboard"
-          title="Dashboard"
-          value="dashboard"
-          :active="$route.path === '/'"
-          rounded="lg"
-          class="mb-1"
-        />
-        <VListItem
-          to="/calendar"
-          prepend-icon="mdi-calendar"
-          title="Calendar View"
-          value="calendar"
-          :active="$route.path === '/calendar'"
-          rounded="lg"
-          class="mb-1"
-        />
-        <VListItem
-          to="/calendars"
-          prepend-icon="mdi-calendar-multiple"
-          title="My Calendars"
-          value="calendars"
-          :active="$route.path === '/calendars'"
-          rounded="lg"
-          class="mb-1"
-        />
-      </VList>
-
-      <!-- Enhanced Admin Section -->
-      <template v-if="isAdmin">
-        <VDivider />
-        <VList class="pa-2">
-          <VListSubheader class="text-overline font-weight-bold text-warning">Administration</VListSubheader>
-          <VListItem
-            to="/admin"
-            prepend-icon="mdi-shield-crown"
-            title="Admin Dashboard"
-            value="admin"
-            :active="$route.path === '/admin'"
-            rounded="lg"
-            class="mb-1"
-          >
-            <template #prepend>
-              <VIcon icon="mdi-shield-crown" color="warning" />
-            </template>
-          </VListItem>
-          <VListItem
-            to="/admin/calendars"
-            prepend-icon="mdi-calendar-multiple-check"
-            title="Manage Calendars"
-            value="admin-calendars"
-            :active="$route.path.startsWith('/admin/calendars')"
-            rounded="lg"
-            class="mb-1"
-          />
-          <VListItem
-            to="/admin/users"
-            prepend-icon="mdi-account-multiple"
-            title="Manage Users"
-            value="admin-users"
-            :active="$route.path === '/admin/users'"
-            rounded="lg"
-            class="mb-1"
-          />
-        </VList>
-      </template>
-
-      <!-- Enhanced Quick Actions -->
-      <template v-if="currentUser">
-        <VDivider />
-        <div class="pa-4">
-          <VBtn
-            color="primary"
-            variant="elevated"
-            block
-            prepend-icon="mdi-plus"
-            @click="handleCreateEvent"
-          >
-            Create Event
-          </VBtn>
-        </div>
-      </template>
-
-      <!-- Enhanced Footer -->
-      <template #append>
-        <VDivider v-if="currentUser" />
-        <div v-if="currentUser" class="pa-4">
-          <VBtn
-            variant="text"
-            color="error"
-            block
-            prepend-icon="mdi-logout"
-            @click="handleLogout"
-          >
-            Logout
-          </VBtn>
-        </div>
-      </template>
-    </VNavigationDrawer>
-
     <VAppBar
       app
-      clipped-left
-      color="primary"
-      elevation="2"
+      color="white"
+      elevation="1"
+      height="64"
+      border="b"
     >
-      <VAppBarNavIcon @click="drawer = !drawer" />
-
-      <VToolbarTitle class="d-flex align-center">
+      <!-- Left side - Logo and Title -->
+      <div class="d-flex align-center ml-4">
         <VAvatar
-          color="white"
+          color="primary"
           size="32"
           class="mr-3"
         >
           <VIcon
-            icon="mdi-calendar-multiple"
-            color="primary"
+            icon="mdi-view-dashboard"
+            color="white"
             size="18"
           />
         </VAvatar>
-        <span class="text-h6 font-weight-bold">Calendar App</span>
-      </VToolbarTitle>
-
-      <VSpacer />
-
-      <!-- Enhanced Breadcrumbs for larger screens -->
-      <VBreadcrumbs
-        v-if="$vuetify.display.mdAndUp && breadcrumbs.length > 1"
-        :items="breadcrumbs"
-        class="d-none d-md-flex"
-        color="white"
-        divider="mdi-chevron-right"
-      />
-
-      <VSpacer />
-
-      <!-- Enhanced User Section -->
-      <div v-if="status === 'authenticated' && currentUser">
-        <BaseUserAvatar :user="currentUser" />
+        <span class="text-h6 font-weight-bold text-grey-darken-3">Dashboard</span>
       </div>
 
-      <!-- Loading state -->
-      <VProgressCircular
-        v-else-if="status === 'loading'"
-        indeterminate
-        size="24"
-        width="2"
-        color="white"
-      />
+      <VSpacer />
 
-      <!-- Enhanced Login button -->
-      <VBtn
-        v-else
-        variant="outlined"
-        color="white"
-        @click="navigateTo('/login')"
-      >
-        <template #prepend>
-          <VIcon icon="mdi-login" size="18" />
-        </template>
-        Login
-      </VBtn>
+      <!-- Center - Navigation Tabs -->
+      <div class="d-flex align-center">
+        <VTabs
+          :model-value="activeTab"
+          color="primary"
+          class="mx-8"
+        >
+          <VTab
+            value="overview"
+            :active="$route.path === '/'"
+            @click="navigateTo('/')"
+          >
+            Overview
+          </VTab>
+          <VTab
+            value="analytics"
+            :active="$route.path === '/analytics'"
+            @click="navigateTo('/analytics')"
+          >
+            Analytics
+          </VTab>
+          <VTab
+            value="calendar"
+            :active="$route.path === '/calendar'"
+            @click="navigateTo('/calendar')"
+          >
+            Calendar
+          </VTab>
+          <VTab
+            value="settings"
+            :active="$route.path === '/settings'"
+            @click="navigateTo('/settings')"
+          >
+            Settings
+          </VTab>
+          <VTab
+            v-if="isAdmin"
+            value="admin"
+            :active="$route.path.startsWith('/admin')"
+            @click="navigateTo('/admin')"
+          >
+            Admin
+          </VTab>
+        </VTabs>
+      </div>
+
+      <VSpacer />
+
+      <!-- Right side - Search and User Avatar -->
+      <div class="d-flex align-center mr-4">
+        <!-- User Avatar with Menu -->
+        <VMenu v-if="currentUser">
+          <template #activator="{ props }">
+            <VBtn
+              v-bind="props"
+              icon
+              variant="text"
+              size="small"
+            >
+              <VAvatar
+                size="32"
+                color="primary"
+              >
+                <span class="text-sm font-weight-bold">
+                  {{ (currentUser.displayName || currentUser.username).charAt(0).toUpperCase() }}
+                </span>
+              </VAvatar>
+            </VBtn>
+          </template>
+          <VList>
+            <VListItem>
+              <VListItemTitle>{{ currentUser.displayName || currentUser.username }}</VListItemTitle>
+              <VListItemSubtitle>{{ isAdmin ? "Administrator" : "User" }}</VListItemSubtitle>
+            </VListItem>
+            <VDivider />
+            <VListItem @click="handleCreateEvent">
+              <template #prepend>
+                <VIcon icon="mdi-plus" />
+              </template>
+              <VListItemTitle>Create Event</VListItemTitle>
+            </VListItem>
+            <VListItem to="/calendars">
+              <template #prepend>
+                <VIcon icon="mdi-calendar-multiple" />
+              </template>
+              <VListItemTitle>My Calendars</VListItemTitle>
+            </VListItem>
+            <VDivider v-if="isAdmin" />
+            <VListItem
+              v-if="isAdmin"
+              to="/admin/users"
+            >
+              <template #prepend>
+                <VIcon icon="mdi-account-multiple" />
+              </template>
+              <VListItemTitle>Manage Users</VListItemTitle>
+            </VListItem>
+            <VListItem
+              v-if="isAdmin"
+              to="/admin/calendars"
+            >
+              <template #prepend>
+                <VIcon icon="mdi-calendar-multiple-check" />
+              </template>
+              <VListItemTitle>Manage Calendars</VListItemTitle>
+            </VListItem>
+            <VDivider />
+            <VListItem @click="handleLogout">
+              <template #prepend>
+                <VIcon
+                  icon="mdi-logout"
+                  color="error"
+                />
+              </template>
+              <VListItemTitle>Logout</VListItemTitle>
+            </VListItem>
+          </VList>
+        </VMenu>
+
+        <!-- Login button for unauthenticated users -->
+        <VBtn
+          v-else
+          variant="outlined"
+          color="primary"
+          @click="navigateTo('/login')"
+        >
+          <template #prepend>
+            <VIcon
+              icon="mdi-login"
+              size="18"
+            />
+          </template>
+          Login
+        </VBtn>
+      </div>
     </VAppBar>
 
     <VMain>
@@ -212,9 +169,8 @@
 </template>
 
 <script setup lang="ts">
-const { data, status, signOut } = useAuth();
+const { data, signOut } = useAuth();
 const route = useRoute();
-const drawer = ref(true);
 
 // Make user data properly reactive
 const currentUser = computed(() => {
@@ -239,44 +195,15 @@ const currentUser = computed(() => {
 
 const isAdmin = computed(() => currentUser.value?.roles?.includes("admin") || false);
 
-// Generate breadcrumbs based on current route
-const breadcrumbs = computed(() => {
-  const pathSegments = route.path.split("/").filter(Boolean);
-  const crumbs = [{ title: "Home", href: "/" }];
-
-  if (pathSegments.length === 0) return crumbs;
-
-  let currentPath = "";
-  for (const segment of pathSegments) {
-    currentPath += `/${segment}`;
-    let title = segment.charAt(0).toUpperCase() + segment.slice(1);
-
-    // Custom titles for known routes
-    switch (currentPath) {
-      case "/admin":
-        title = "Admin Dashboard";
-        break;
-      case "/admin/calendars":
-        title = "Manage Calendars";
-        break;
-      case "/admin/users":
-        title = "Manage Users";
-        break;
-      case "/calendar":
-        title = "Calendar View";
-        break;
-      case "/calendars":
-        title = "My Calendars";
-        break;
-    }
-
-    crumbs.push({
-      title,
-      href: currentPath,
-    });
-  }
-
-  return crumbs;
+// Active tab based on current route
+const activeTab = computed(() => {
+  const path = route.path;
+  if (path === "/") return "overview";
+  if (path === "/analytics") return "analytics";
+  if (path === "/calendar") return "calendar";
+  if (path === "/settings") return "settings";
+  if (path.startsWith("/admin")) return "admin";
+  return "overview";
 });
 
 // Handle quick actions
@@ -293,26 +220,214 @@ const handleLogout = async () => {
     console.error("Logout error:", error);
   }
 };
-
-// Responsive drawer behavior
-onMounted(() => {
-  // Close drawer on mobile by default
-  if (import.meta.client) {
-    const { mobile } = useDisplay();
-    if (mobile.value) {
-      drawer.value = false;
-    }
-  }
-});
 </script>
 
 <style scoped>
-:deep(.v-navigation-drawer__content) {
-  display: flex;
-  flex-direction: column;
+/* App Bar Enhancements */
+.v-app-bar {
+  backdrop-filter: blur(20px);
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-:deep(.v-list-subheader) {
+/* Tab Hover Effects */
+:deep(.v-tab) {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: none;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+:deep(.v-tab:hover) {
+  color: rgb(var(--v-theme-primary));
+  transform: translateY(-1px);
+}
+
+:deep(.v-tab--selected) {
+  color: rgb(var(--v-theme-primary));
   font-weight: 600;
+}
+
+:deep(.v-tab::before) {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: rgb(var(--v-theme-primary));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%);
+}
+
+:deep(.v-tab--selected::before) {
+  width: 100%;
+}
+
+:deep(.v-tab:hover::before) {
+  width: 100%;
+  background: rgba(var(--v-theme-primary), 0.5);
+}
+
+:deep(.v-text-field:hover .v-field) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.v-text-field .v-field--focused) {
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
+}
+
+/* Button Enhancements */
+.v-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: none;
+  font-weight: 500;
+}
+
+.v-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.v-btn:active {
+  transform: translateY(0);
+}
+
+/* Avatar Enhancements */
+.v-avatar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.v-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Badge Animation */
+:deep(.v-badge .v-badge__badge) {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Menu Enhancements */
+:deep(.v-menu > .v-overlay__content) {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+:deep(.v-list-item) {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  margin: 2px 8px;
+}
+
+:deep(.v-list-item:hover) {
+  background-color: rgba(var(--v-theme-primary), 0.08);
+  transform: translateX(4px);
+}
+
+:deep(.v-list-item__prepend) {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.v-list-item:hover .v-list-item__prepend) {
+  transform: scale(1.1);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Accessibility improvements */
+.v-btn:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Subtle animations on page load */
+.fade-in {
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger animation for multiple elements */
+.stagger-item {
+  opacity: 0;
+  animation: staggerIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.stagger-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.stagger-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.stagger-item:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.stagger-item:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.stagger-item:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+@keyframes staggerIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
