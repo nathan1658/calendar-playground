@@ -1,9 +1,10 @@
 import { Calendar } from "~/server/models/Calendar.model";
-import { requireAuth } from "~/server/utils/auth";
-import type { PopulatedCalendar } from "~/server/utils/types";
+import { getOptionalAuth } from "~/server/utils/auth";
+import { requireCalendarAccess } from "~/server/utils/permissions";
+import type { PopulatedCalendar } from "~/types/database";
 
 export default defineEventHandler(async event => {
-  const currentUser = await requireAuth(event);
+  const currentUser = await getOptionalAuth(event);
   const calendarId = getRouterParam(event, "id");
 
   if (!calendarId) {
@@ -12,6 +13,9 @@ export default defineEventHandler(async event => {
       statusMessage: "Calendar ID is required",
     });
   }
+
+  // Check calendar access (handles both public and private calendars)
+  await requireCalendarAccess(calendarId, currentUser, "view");
 
   // Find calendar
   const calendar = (await Calendar.findById(calendarId)
@@ -22,21 +26,6 @@ export default defineEventHandler(async event => {
     throw createError({
       statusCode: 404,
       statusMessage: "Calendar not found",
-    });
-  }
-
-  // Check permissions: admin can view any calendar, users need explicit permission
-  const hasPermission =
-    currentUser.roles.includes("admin") ||
-    calendar.permissions.some(
-      perm =>
-        perm.userId._id.toString() === currentUser.id && (perm.accessLevel === "view" || perm.accessLevel === "edit"),
-    );
-
-  if (!hasPermission) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: "Access denied to this calendar",
     });
   }
 
@@ -62,6 +51,7 @@ export default defineEventHandler(async event => {
           displayName: perm.userId.displayName,
         },
       })),
+      isPublic: calendar.isPublic,
       createdAt: calendar.createdAt,
       updatedAt: calendar.updatedAt,
     },

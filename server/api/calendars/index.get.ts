@@ -1,23 +1,33 @@
 import { Calendar } from "~/server/models/Calendar.model";
-import { requireAuth } from "~/server/utils/auth";
-import type { PopulatedCalendar } from "~/server/utils/types";
+import { getOptionalAuth } from "~/server/utils/auth";
+import type { PopulatedCalendar } from "~/types/database";
 
 export default defineEventHandler(async event => {
-  // Require authentication
-  const currentUser = await requireAuth(event);
+  // Get optional authentication (null if not authenticated)
+  const currentUser = await getOptionalAuth(event);
 
   let calendars;
 
-  if (currentUser.roles.includes("admin")) {
+  if (!currentUser) {
+    // Unauthenticated users can only see public calendars
+    calendars = (await Calendar.find({ isPublic: true })
+      .populate("ownerId", "username displayName")
+      .populate("permissions.userId", "username displayName")
+      .sort({ createdAt: -1 })) as PopulatedCalendar[];
+  } else if (currentUser.roles.includes("admin")) {
     // Admin can see all calendars
     calendars = (await Calendar.find()
       .populate("ownerId", "username displayName")
       .populate("permissions.userId", "username displayName")
       .sort({ createdAt: -1 })) as PopulatedCalendar[];
   } else {
-    // Regular users can only see calendars they have permission for
+    // Regular users can see calendars they have permission for + public calendars
     calendars = (await Calendar.find({
-      "permissions.userId": currentUser.id,
+      $or: [
+        { "permissions.userId": currentUser.id },
+        { ownerId: currentUser.id },
+        { isPublic: true },
+      ],
     })
       .populate("ownerId", "username displayName")
       .populate("permissions.userId", "username displayName")
@@ -46,6 +56,7 @@ export default defineEventHandler(async event => {
           displayName: perm.userId.displayName,
         },
       })),
+      isPublic: calendar.isPublic,
       createdAt: calendar.createdAt,
       updatedAt: calendar.updatedAt,
     })),

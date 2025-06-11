@@ -6,108 +6,138 @@
       clipped
       :width="280"
     >
-      <!-- User Section -->
-      <VList
-        v-if="currentUser"
-        class="py-2"
-      >
-        <VListItem
-          class="mb-2"
-          lines="two"
-        >
-          <template #prepend>
+      <!-- Enhanced User Section -->
+      <div v-if="currentUser" class="pa-4 border-b">
+        <VCard variant="outlined" class="pa-3 bg-grey-lighten-5">
+          <div class="d-flex align-center">
             <VAvatar
+              size="44"
               color="primary"
-              size="40"
+              class="mr-3"
             >
-              <VIcon
-                icon="mdi-account"
-                size="24"
-              />
+              <span class="text-h6 font-weight-bold">
+                {{ (currentUser.displayName || currentUser.username).charAt(0).toUpperCase() }}
+              </span>
             </VAvatar>
-          </template>
-          <VListItemTitle>{{ currentUser.displayName || currentUser.username }}</VListItemTitle>
-          <VListItemSubtitle>{{ isAdmin ? "Administrator" : "User" }}</VListItemSubtitle>
-        </VListItem>
-      </VList>
+            <div class="flex-grow-1">
+              <div class="text-body-2 font-weight-bold text-grey-darken-4">
+                {{ currentUser.displayName || currentUser.username }}
+              </div>
+              <div class="d-flex align-center mt-1">
+                <VIcon 
+                  :icon="isAdmin ? 'mdi-shield-crown' : 'mdi-account'" 
+                  size="12" 
+                  :color="isAdmin ? 'warning' : 'grey'"
+                  class="mr-1"
+                />
+                <span class="text-caption text-grey">{{ isAdmin ? "Administrator" : "User" }}</span>
+              </div>
+            </div>
+          </div>
+        </VCard>
+      </div>
 
-      <VDivider v-if="currentUser" />
-
-      <!-- Main Navigation -->
-      <VList class="py-2">
-        <VListSubheader>Main</VListSubheader>
+      <!-- Enhanced Main Navigation -->
+      <VList class="pa-2">
+        <VListSubheader class="text-overline font-weight-bold text-primary">Main</VListSubheader>
         <VListItem
+          to="/"
           prepend-icon="mdi-view-dashboard"
           title="Dashboard"
-          to="/"
           value="dashboard"
+          :active="$route.path === '/'"
+          rounded="lg"
+          class="mb-1"
         />
         <VListItem
+          to="/calendar"
           prepend-icon="mdi-calendar"
           title="Calendar View"
-          to="/calendar"
           value="calendar"
+          :active="$route.path === '/calendar'"
+          rounded="lg"
+          class="mb-1"
         />
         <VListItem
+          to="/calendars"
           prepend-icon="mdi-calendar-multiple"
           title="My Calendars"
-          to="/calendars"
           value="calendars"
+          :active="$route.path === '/calendars'"
+          rounded="lg"
+          class="mb-1"
         />
       </VList>
 
-      <!-- Admin Section -->
+      <!-- Enhanced Admin Section -->
       <template v-if="isAdmin">
         <VDivider />
-        <VList class="py-2">
-          <VListSubheader>Administration</VListSubheader>
+        <VList class="pa-2">
+          <VListSubheader class="text-overline font-weight-bold text-warning">Administration</VListSubheader>
           <VListItem
+            to="/admin"
             prepend-icon="mdi-shield-crown"
             title="Admin Dashboard"
-            to="/admin"
             value="admin"
-          />
+            :active="$route.path === '/admin'"
+            rounded="lg"
+            class="mb-1"
+          >
+            <template #prepend>
+              <VIcon icon="mdi-shield-crown" color="warning" />
+            </template>
+          </VListItem>
           <VListItem
+            to="/admin/calendars"
             prepend-icon="mdi-calendar-multiple-check"
             title="Manage Calendars"
-            to="/admin/calendars"
             value="admin-calendars"
+            :active="$route.path.startsWith('/admin/calendars')"
+            rounded="lg"
+            class="mb-1"
           />
           <VListItem
+            to="/admin/users"
             prepend-icon="mdi-account-multiple"
             title="Manage Users"
-            to="/admin/users"
             value="admin-users"
+            :active="$route.path === '/admin/users'"
+            rounded="lg"
+            class="mb-1"
           />
         </VList>
       </template>
 
-      <!-- Quick Actions -->
+      <!-- Enhanced Quick Actions -->
       <template v-if="currentUser">
         <VDivider />
-        <VList class="py-2">
-          <VListSubheader>Quick Actions</VListSubheader>
-          <VListItem
+        <div class="pa-4">
+          <VBtn
+            color="primary"
+            variant="elevated"
+            block
             prepend-icon="mdi-plus"
-            title="Create Event"
-            value="create-event"
             @click="handleCreateEvent"
-          />
-        </VList>
+          >
+            Create Event
+          </VBtn>
+        </div>
       </template>
 
-      <!-- Footer -->
+      <!-- Enhanced Footer -->
       <template #append>
-        <VDivider />
-        <VList class="py-2">
-          <VListItem
-            v-if="currentUser"
+        <VDivider v-if="currentUser" />
+        <div v-if="currentUser" class="pa-4">
+          <VBtn
+            variant="text"
+            color="error"
+            block
             prepend-icon="mdi-logout"
-            title="Logout"
-            value="logout"
             @click="handleLogout"
-          />
-        </VList>
+          >
+            Logout
+          </VBtn>
+        </div>
       </template>
     </VNavigationDrawer>
 
@@ -115,22 +145,28 @@
       app
       clipped-left
       color="primary"
-      dark
       elevation="2"
     >
       <VAppBarNavIcon @click="drawer = !drawer" />
 
       <VToolbarTitle class="d-flex align-center">
-        <VIcon
-          icon="mdi-calendar-multiple"
-          class="mr-2"
-        />
-        Calendar App
+        <VAvatar
+          color="white"
+          size="32"
+          class="mr-3"
+        >
+          <VIcon
+            icon="mdi-calendar-multiple"
+            color="primary"
+            size="18"
+          />
+        </VAvatar>
+        <span class="text-h6 font-weight-bold">Calendar App</span>
       </VToolbarTitle>
 
       <VSpacer />
 
-      <!-- Breadcrumbs for larger screens -->
+      <!-- Enhanced Breadcrumbs for larger screens -->
       <VBreadcrumbs
         v-if="$vuetify.display.mdAndUp && breadcrumbs.length > 1"
         :items="breadcrumbs"
@@ -141,11 +177,10 @@
 
       <VSpacer />
 
-      <!-- User Avatar Component - Only show when authenticated -->
-      <BaseUserAvatar
-        v-if="status === 'authenticated' && currentUser"
-        :user="currentUser"
-      />
+      <!-- Enhanced User Section -->
+      <div v-if="status === 'authenticated' && currentUser">
+        <BaseUserAvatar :user="currentUser" />
+      </div>
 
       <!-- Loading state -->
       <VProgressCircular
@@ -156,13 +191,16 @@
         color="white"
       />
 
-      <!-- Fallback login button -->
+      <!-- Enhanced Login button -->
       <VBtn
         v-else
-        variant="text"
-        prepend-icon="mdi-login"
+        variant="outlined"
+        color="white"
         @click="navigateTo('/login')"
       >
+        <template #prepend>
+          <VIcon icon="mdi-login" size="18" />
+        </template>
         Login
       </VBtn>
     </VAppBar>
@@ -275,7 +313,6 @@ onMounted(() => {
 }
 
 :deep(.v-list-subheader) {
-  color: rgb(var(--v-theme-primary));
   font-weight: 600;
 }
 </style>

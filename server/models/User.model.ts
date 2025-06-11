@@ -1,18 +1,8 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import type { IUser } from "~/types/database";
 
 const { Schema, model, models } = mongoose;
-
-export interface IUser {
-  _id: string;
-  username: string;
-  password: string;
-  displayName?: string;
-  roles: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
-}
 
 const userSchema = new Schema(
   {

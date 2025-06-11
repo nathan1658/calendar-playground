@@ -1,83 +1,237 @@
 <template>
   <VDialog
     :model-value="modelValue"
-    max-width="500"
+    max-width="560"
+    persistent
+    class="modal-backdrop"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard>
-      <VCardTitle>Create New Calendar</VCardTitle>
+    <VCard class="modal-content">
+      <!-- Enhanced Header -->
+      <VCardTitle class="d-flex justify-space-between align-center pa-6 bg-grey-lighten-5 border-b">
+        <div class="d-flex align-center">
+          <VAvatar
+            color="primary"
+            size="40"
+            class="mr-3"
+          >
+            <VIcon 
+              icon="mdi-calendar-plus"
+              color="white"
+              size="20"
+            />
+          </VAvatar>
+          <div>
+            <h2 class="text-h6 font-weight-bold text-grey-darken-4">Create New Calendar</h2>
+            <p class="text-body-2 text-grey-darken-1 ma-0">Set up a new calendar for your team</p>
+          </div>
+        </div>
+        <VBtn
+          icon
+          variant="text"
+          size="small"
+          color="grey"
+          @click="handleCancel"
+        >
+          <VIcon icon="mdi-close" size="20" />
+        </VBtn>
+      </VCardTitle>
 
-      <VCardText>
+      <!-- Enhanced Form Content -->
+      <VCardText class="pa-6">
         <VForm
           ref="formRef"
           v-model="valid"
           @submit.prevent="handleSubmit"
         >
-          <VTextField
-            v-model="form.name"
-            label="Calendar Name"
-            :rules="nameRules"
-            required
-            variant="outlined"
-            class="mb-3"
-          />
+          <div>
+            <!-- Calendar Name Field -->
+            <div class="mb-6">
+              <VTextField
+                v-model="form.name"
+                :rules="nameRules"
+                label="Calendar Name"
+                placeholder="Enter a descriptive name for your calendar"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                required
+              >
+                <template #prepend-inner>
+                  <VIcon 
+                    icon="mdi-calendar"
+                    size="18"
+                    color="grey"
+                  />
+                </template>
+              </VTextField>
+            </div>
 
-          <VTextField
-            v-model="form.category"
-            label="Category (Optional)"
-            :rules="categoryRules"
-            variant="outlined"
-            class="mb-3"
-          />
+            <!-- Category Field -->
+            <div class="mb-6">
+              <VTextField
+                v-model="form.category"
+                :rules="categoryRules"
+                label="Category (Optional)"
+                placeholder="e.g., Work, Personal, Projects"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+              >
+                <template #prepend-inner>
+                  <VIcon 
+                    icon="mdi-tag"
+                    size="18"
+                    color="grey"
+                  />
+                </template>
+              </VTextField>
+            </div>
 
-          <VSelect
-            v-model="form.ownerId"
-            label="Owner (Optional)"
-            :items="users"
-            item-title="displayName"
-            item-value="id"
-            variant="outlined"
-            clearable
-            class="mb-3"
-          >
-            <template #item="{ props, item }">
-              <VListItem v-bind="props">
-                <VListItemTitle>
-                  {{ item.raw.displayName || item.raw.username }}
-                </VListItemTitle>
-                <VListItemSubtitle>
-                  {{ item.raw.username }}
-                </VListItemSubtitle>
-              </VListItem>
-            </template>
-          </VSelect>
+            <!-- Owner Selection Field -->
+            <div class="mb-6">
+              <VSelect
+                v-model="form.ownerId"
+                :items="users"
+                item-title="displayName"
+                item-value="id"
+                label="Calendar Owner (Optional - defaults to you)"
+                placeholder="Select a calendar owner"
+                variant="outlined"
+                density="comfortable"
+                clearable
+                hide-details="auto"
+              >
+                <template #prepend-inner>
+                  <VIcon 
+                    icon="mdi-account"
+                    size="18"
+                    color="grey"
+                  />
+                </template>
+                <template #item="{ props, item }">
+                  <VListItem v-bind="props">
+                    <template #prepend>
+                      <VAvatar 
+                        size="32"
+                        color="primary"
+                        class="mr-3"
+                      >
+                        <span class="text-caption font-weight-bold">
+                          {{ (item.raw.displayName || item.raw.username).charAt(0).toUpperCase() }}
+                        </span>
+                      </VAvatar>
+                    </template>
+                    <VListItemTitle class="font-weight-medium">
+                      {{ item.raw.displayName || item.raw.username }}
+                    </VListItemTitle>
+                    <VListItemSubtitle>
+                      {{ item.raw.username }}
+                    </VListItemSubtitle>
+                  </VListItem>
+                </template>
+                <template #selection="{ item }">
+                  <div class="d-flex align-center">
+                    <VAvatar 
+                      size="20"
+                      color="primary"
+                      class="mr-2"
+                    >
+                      <span style="font-size: 10px;">
+                        {{ (item.raw.displayName || item.raw.username).charAt(0).toUpperCase() }}
+                      </span>
+                    </VAvatar>
+                    <span>{{ item.raw.displayName || item.raw.username }}</span>
+                  </div>
+                </template>
+              </VSelect>
+            </div>
+
+            <!-- Public Access Toggle -->
+            <VCard variant="outlined" class="pa-4 bg-grey-lighten-5">
+              <div class="d-flex align-start">
+                <VCheckbox
+                  v-model="form.isPublic"
+                  color="primary"
+                  hide-details
+                  density="compact"
+                />
+                <div class="flex-grow-1 ml-2">
+                  <div class="text-subtitle-2 font-weight-medium text-grey-darken-3 cursor-pointer" @click="form.isPublic = !form.isPublic">
+                    Public Calendar Access
+                  </div>
+                  <p class="text-caption text-grey-darken-1 mb-2">
+                    Allow unauthenticated users to view this calendar and its events. 
+                    Perfect for public schedules and shared resources.
+                  </p>
+                  <VAlert
+                    v-if="form.isPublic"
+                    type="info"
+                    variant="tonal"
+                    density="compact"
+                    class="mt-2"
+                  >
+                    <template #prepend>
+                      <VIcon icon="mdi-earth" size="16" />
+                    </template>
+                    <span class="text-caption">This calendar will be publicly viewable</span>
+                  </VAlert>
+                </div>
+              </div>
+            </VCard>
+          </div>
         </VForm>
       </VCardText>
 
-      <VCardActions>
-        <VSpacer />
-        <VBtn
-          text
-          @click="handleCancel"
-        >
-          Cancel
-        </VBtn>
-        <VBtn
-          color="primary"
-          :loading="loading"
-          :disabled="!valid"
-          @click="handleSubmit"
-        >
-          Create
-        </VBtn>
+      <!-- Enhanced Actions -->
+      <VCardActions class="px-6 py-4 bg-grey-lighten-5 d-flex justify-space-between">
+        <div class="d-flex align-center">
+          <VIcon 
+            icon="mdi-information"
+            size="16"
+            color="grey"
+            class="mr-2"
+          />
+          <span class="text-caption text-grey">
+            Calendar permissions can be configured after creation
+          </span>
+        </div>
+        
+        <div class="d-flex ga-3">
+          <VBtn
+            variant="text"
+            color="grey"
+            :disabled="loading"
+            @click="handleCancel"
+          >
+            Cancel
+          </VBtn>
+          <VBtn
+            color="primary"
+            :loading="loading"
+            :disabled="!valid || !form.name.trim()"
+            @click="handleSubmit"
+          >
+            <template #prepend>
+              <VIcon icon="mdi-plus" size="18" />
+            </template>
+            Create Calendar
+          </VBtn>
+        </div>
       </VCardActions>
 
+      <!-- Enhanced Error Display -->
       <VAlert
         v-if="errorMessage"
         type="error"
-        class="ma-4"
+        variant="tonal"
+        class="mx-6 mb-6"
       >
-        {{ errorMessage }}
+        <template #prepend>
+          <VIcon icon="mdi-alert-circle" />
+        </template>
+        <div class="font-weight-medium">Failed to create calendar</div>
+        <div class="text-body-2 mt-1">{{ errorMessage }}</div>
       </VAlert>
     </VCard>
   </VDialog>
@@ -103,6 +257,7 @@ interface CreateCalendarPayload {
   name: string;
   category?: string;
   ownerId?: string;
+  isPublic?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -118,6 +273,7 @@ const form = ref({
   name: "",
   category: "",
   ownerId: "",
+  isPublic: false,
 });
 
 const nameRules = [
@@ -155,6 +311,10 @@ const handleSubmit = async () => {
       payload.ownerId = form.value.ownerId;
     }
 
+    if (form.value.isPublic) {
+      payload.isPublic = form.value.isPublic;
+    }
+
     await $fetch("/api/calendars", {
       method: "POST",
       body: payload,
@@ -178,6 +338,7 @@ const handleCancel = () => {
     name: "",
     category: "",
     ownerId: "",
+    isPublic: false,
   };
   errorMessage.value = "";
   emit("update:modelValue", false);

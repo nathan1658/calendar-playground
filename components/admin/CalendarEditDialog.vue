@@ -29,6 +29,12 @@
             variant="outlined"
             class="mb-3"
           />
+
+          <VCheckbox
+            v-model="form.isPublic"
+            label="Public Calendar (viewable by unauthenticated users)"
+            color="primary"
+          />
         </VForm>
       </VCardText>
 
@@ -66,6 +72,7 @@ interface Calendar {
   id: string;
   name: string;
   category?: string;
+  isPublic?: boolean;
 }
 
 interface Props {
@@ -81,6 +88,7 @@ interface Emits {
 interface UpdateCalendarPayload {
   name?: string;
   category?: string;
+  isPublic?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -94,6 +102,7 @@ const errorMessage = ref("");
 const form = ref({
   name: "",
   category: "",
+  isPublic: false,
 });
 
 const nameRules = [
@@ -118,6 +127,10 @@ const handleSubmit = async () => {
 
     if (form.value.category !== (props.calendar.category || "")) {
       payload.category = form.value.category || undefined;
+    }
+
+    if (form.value.isPublic !== (props.calendar.isPublic || false)) {
+      payload.isPublic = form.value.isPublic;
     }
 
     await $fetch(`/api/calendars/${props.calendar.id}`, {
@@ -151,6 +164,7 @@ watch(
       form.value = {
         name: newCalendar.name,
         category: newCalendar.category || "",
+        isPublic: newCalendar.isPublic || false,
       };
     }
   },
@@ -165,6 +179,7 @@ watch(
       form.value = {
         name: "",
         category: "",
+        isPublic: false,
       };
     }
   },

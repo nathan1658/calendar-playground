@@ -1,27 +1,19 @@
-import { z } from "zod";
 import { Event } from "~/server/models/Event.model";
 import { Calendar } from "~/server/models/Calendar.model";
-import { requireAuth } from "~/server/utils/auth";
-import { getUserAccessibleCalendarIds } from "~/server/utils/permissions";
-
-const querySchema = z.object({
-  start: z.string().datetime().optional(),
-  end: z.string().datetime().optional(),
-  category: z.string().optional(),
-  search: z.string().optional(),
-  calendarIds: z.string().optional(), // Comma-separated calendar IDs
-});
+import { getOptionalAuth } from "~/server/utils/auth";
+import { getAllAccessibleCalendarIds } from "~/server/utils/permissions";
+import { aggregatedEventsQuerySchema, type AggregatedEventsQueryInput } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {
-    // Require authentication
-    const currentUser = await requireAuth(event);
+    // Get optional authentication
+    const currentUser = await getOptionalAuth(event);
 
     const query = getQuery(event);
-    const { start, end, category, search, calendarIds } = querySchema.parse(query);
+    const { start, end, category, search, calendarIds } = aggregatedEventsQuerySchema.parse(query);
 
-    // Get accessible calendar IDs
-    let accessibleCalendarIds = await getUserAccessibleCalendarIds(currentUser);
+    // Get accessible calendar IDs (includes public calendars for unauthenticated users)
+    let accessibleCalendarIds = await getAllAccessibleCalendarIds(currentUser);
 
     // Filter by specific calendar IDs if provided
     if (calendarIds) {

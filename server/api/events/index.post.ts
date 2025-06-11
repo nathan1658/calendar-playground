@@ -1,16 +1,7 @@
-import { z } from "zod";
 import { Event } from "~/server/models/Event.model";
 import { requireAuth } from "~/server/utils/auth";
 import { requireCalendarPermission } from "~/server/utils/permissions";
-
-const createEventSchema = z.object({
-  calendarId: z.string().min(1),
-  subject: z.string().min(1).max(200).trim(),
-  description: z.string().max(1000).trim().optional(),
-  startTime: z.string().datetime(),
-  endTime: z.string().datetime(),
-  allDay: z.boolean().default(false),
-});
+import { createEventSchema, type CreateEventInput } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {

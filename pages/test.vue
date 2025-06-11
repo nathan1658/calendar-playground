@@ -1,14 +1,14 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col
+  <VContainer>
+    <VRow>
+      <VCol
         cols="12"
         md="6"
       >
-        <v-card>
-          <v-card-title>Input Test</v-card-title>
-          <v-card-text>
-            <v-text-field
+        <VCard>
+          <VCardTitle>Input Test</VCardTitle>
+          <VCardText>
+            <VTextField
               v-model="testInput"
               label="Test Input"
               variant="outlined"
@@ -19,7 +19,7 @@
               {{ testInput }}
             </p>
 
-            <v-text-field
+            <VTextField
               v-model="anotherInput"
               label="Another Test Input"
               variant="outlined"
@@ -30,12 +30,12 @@
               {{ anotherInput }}
             </p>
 
-            <v-btn @click="clearInputs">Clear All</v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+            <VBtn @click="clearInputs">Clear All</VBtn>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

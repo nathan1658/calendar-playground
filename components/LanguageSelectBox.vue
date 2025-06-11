@@ -10,7 +10,7 @@
             class="border rounded"
             variant="text"
             size="small"
-          ></VBtn>
+          />
         </template>
 
         <VList density="compact">

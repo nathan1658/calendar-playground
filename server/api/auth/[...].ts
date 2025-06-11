@@ -1,13 +1,8 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NuxtAuthHandler } from "#auth";
-import z from "zod";
 import { User } from "~/server/models/User.model";
 import type { User as NextAuthUser } from "next-auth";
-
-const loginSchema = z.object({
-  username: z.string().min(3).max(50),
-  password: z.string().min(6),
-});
+import { loginSchema, type LoginInput } from "~/types/validation";
 
 export default NuxtAuthHandler({
   pages: {

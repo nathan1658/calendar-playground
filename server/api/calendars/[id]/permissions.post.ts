@@ -1,13 +1,8 @@
-import { z } from "zod";
-import { Calendar, type ICalendarPermission } from "~/server/models/Calendar.model";
+import { Calendar } from "~/server/models/Calendar.model";
 import { User } from "~/server/models/User.model";
 import { requireAdminAuth } from "~/server/utils/auth";
-import type { PopulatedCalendar } from "~/server/utils/types";
-
-const addPermissionSchema = z.object({
-  userId: z.string(),
-  accessLevel: z.enum(["view", "edit"]),
-});
+import { addPermissionSchema, type AddPermissionInput } from "~/types/validation";
+import type { PopulatedCalendar, ICalendarPermission } from "~/types/database";
 
 export default defineEventHandler(async event => {
   // Require admin authentication

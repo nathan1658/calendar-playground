@@ -1,11 +1,6 @@
 import { User } from "~/server/models/User.model";
 import { requireAdminAuth } from "~/server/utils/auth";
-import { z } from "zod";
-
-const updateUserSchema = z.object({
-  displayName: z.string().min(1).max(100).optional(),
-  roles: z.array(z.enum(["admin", "user"])).optional(),
-});
+import { updateUserSchema, type UpdateUserInput } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {

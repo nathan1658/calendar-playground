@@ -1,21 +1,7 @@
 import mongoose from "mongoose";
+import type { ICalendar, ICalendarPermission } from "~/types/database";
 
 const { Schema, model, models } = mongoose;
-
-export interface ICalendarPermission {
-  userId: string;
-  accessLevel: "view" | "edit";
-}
-
-export interface ICalendar {
-  _id: string;
-  name: string;
-  category?: string;
-  ownerId?: string;
-  permissions: ICalendarPermission[];
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const calendarPermissionSchema = new Schema(
   {
@@ -52,6 +38,10 @@ const calendarSchema = new Schema(
       ref: "User",
     },
     permissions: [calendarPermissionSchema],
+    isPublic: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

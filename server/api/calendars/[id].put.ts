@@ -1,12 +1,7 @@
-import { z } from "zod";
 import { Calendar } from "~/server/models/Calendar.model";
 import { requireAuth } from "~/server/utils/auth";
-import type { PopulatedCalendar } from "~/server/utils/types";
-
-const updateCalendarSchema = z.object({
-  name: z.string().min(1).max(100).trim().optional(),
-  category: z.string().max(50).trim().optional(),
-});
+import { updateCalendarSchema, type UpdateCalendarInput } from "~/types/validation";
+import type { PopulatedCalendar } from "~/types/database";
 
 export default defineEventHandler(async event => {
   const currentUser = await requireAuth(event);
@@ -75,6 +70,7 @@ export default defineEventHandler(async event => {
           displayName: perm.userId.displayName,
         },
       })),
+      isPublic: updatedCalendar.isPublic,
       createdAt: updatedCalendar.createdAt,
       updatedAt: updatedCalendar.updatedAt,
     },

@@ -1,17 +1,12 @@
-import { z } from "zod";
 import { Event } from "~/server/models/Event.model";
-import { requireAuth } from "~/server/utils/auth";
-import { requireCalendarPermission } from "~/server/utils/permissions";
-
-const querySchema = z.object({
-  start: z.string().datetime().optional(),
-  end: z.string().datetime().optional(),
-});
+import { getOptionalAuth } from "~/server/utils/auth";
+import { requireCalendarAccess } from "~/server/utils/permissions";
+import { eventsQuerySchema, type EventsQueryInput } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {
-    // Require authentication
-    const currentUser = await requireAuth(event);
+    // Get optional authentication
+    const currentUser = await getOptionalAuth(event);
 
     const calendarId = getRouterParam(event, "calendarId");
     if (!calendarId) {
@@ -21,11 +16,11 @@ export default defineEventHandler(async event => {
       });
     }
 
-    // Check if user has view permission on the calendar
-    await requireCalendarPermission(calendarId, currentUser, "view");
+    // Check if user has view access to the calendar (including public access)
+    await requireCalendarAccess(calendarId, currentUser, "view");
 
     const query = getQuery(event);
-    const { start, end } = querySchema.parse(query);
+    const { start, end } = eventsQuerySchema.parse(query);
 
     // Build date filter
     let dateFilter = {};

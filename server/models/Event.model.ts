@@ -1,19 +1,7 @@
 import mongoose from "mongoose";
+import type { IEvent } from "~/types/database";
 
 const { Schema, model, models } = mongoose;
-
-export interface IEvent {
-  _id: string;
-  calendarId: string;
-  subject: string;
-  description?: string;
-  startTime: Date;
-  endTime: Date;
-  allDay: boolean;
-  createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const eventSchema = new Schema(
   {

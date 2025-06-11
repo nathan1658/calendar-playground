@@ -42,3 +42,22 @@ export async function requireAdminAuth(event: H3Event): Promise<AuthUser> {
   requireAdmin(user);
   return user;
 }
+
+export async function getOptionalAuth(event: H3Event): Promise<AuthUser | null> {
+  try {
+    const session = await getServerSession(event);
+    if (!session?.user) {
+      return null;
+    }
+
+    const user = session.user as AuthUser & { name?: string; email?: string; image?: string };
+    return {
+      id: user.id,
+      username: user.username,
+      displayName: user.displayName,
+      roles: user.roles || [],
+    };
+  } catch {
+    return null;
+  }
+}

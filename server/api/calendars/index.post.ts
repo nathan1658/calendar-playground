@@ -1,12 +1,6 @@
-import { z } from "zod";
 import { Calendar } from "~/server/models/Calendar.model";
 import { requireAdminAuth } from "~/server/utils/auth";
-
-const createCalendarSchema = z.object({
-  name: z.string().min(1).max(100).trim(),
-  category: z.string().max(50).trim().optional(),
-  ownerId: z.string().optional(),
-});
+import { createCalendarSchema, type CreateCalendarInput } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {
@@ -14,7 +8,7 @@ export default defineEventHandler(async event => {
     const currentUser = await requireAdminAuth(event);
 
     const body = await readBody(event);
-    const { name, category, ownerId } = createCalendarSchema.parse(body);
+    const { name, category, ownerId, isPublic } = createCalendarSchema.parse(body);
 
     // Create new calendar
     const calendar = new Calendar({
@@ -22,6 +16,7 @@ export default defineEventHandler(async event => {
       category,
       ownerId: ownerId || currentUser.id,
       permissions: [], // Start with empty permissions, admin can assign later
+      isPublic: isPublic || false,
     });
 
     await calendar.save();
@@ -33,6 +28,7 @@ export default defineEventHandler(async event => {
         category: calendar.category,
         ownerId: calendar.ownerId?.toString(),
         permissions: calendar.permissions,
+        isPublic: calendar.isPublic,
         createdAt: calendar.createdAt,
         updatedAt: calendar.updatedAt,
       },

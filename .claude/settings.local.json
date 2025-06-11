@@ -4,7 +4,9 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm run:*)",
-      "Bash(pnpm lint:*)"
+      "Bash(pnpm lint:*)",
+      "Bash(grep:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
