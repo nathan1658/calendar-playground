@@ -28,6 +28,8 @@ export default defineNuxtConfig({
     // Private keys (only available on server-side)
     mongodbUri: process.env.MONGODB_URI,
     authSecret: process.env.NUXT_AUTH_SECRET,
+    initialAdminName: process.env.INITIAL_ADMIN_NAME || "admin",
+    initialAdminPassword: process.env.INITIAL_ADMIN_PASSWORD || "password",
 
     // Public keys (exposed to client-side)
     public: {
