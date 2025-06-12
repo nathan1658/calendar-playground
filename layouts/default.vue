@@ -155,7 +155,17 @@
       <slot />
     </VMain>
 
-    <LoginDialog v-model="loginDialog" @success="handleLoginSuccess" />
+    <!-- Global Snackbar Notifications -->
+    <SnackbarNotification
+      v-for="snackbar in snackbarStore.snackbars"
+      :key="snackbar.id"
+      v-bind="snackbar"
+    />
+
+    <LoginDialog
+      v-model="loginDialog"
+      @success="handleLoginSuccess"
+    />
   </VApp>
 </template>
 
@@ -163,7 +173,7 @@
 const { data, signOut } = useAuth();
 const route = useRoute();
 const loginDialog = ref(false);
-const { addToast } = useToast();
+const snackbarStore = useSnackbarStore();
 
 const openLoginDialog = () => {
   loginDialog.value = true;
@@ -171,11 +181,7 @@ const openLoginDialog = () => {
 
 const handleLoginSuccess = (message?: string) => {
   if (message) {
-    addToast({
-      message,
-      type: 'success',
-      duration: 4000
-    });
+    snackbarStore.success("Login Successful", message, { timeout: 4000 });
   }
 };
 

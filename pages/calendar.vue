@@ -50,7 +50,7 @@
                       class="pr-2"
                       :model-value="selectedCalendarIds.includes(calendar.id)"
                       :color="getCalendarColor(calendar.category)"
-                      @update:model-value="toggleCalendar(calendar.id, $event)"
+                      @update:model-value="toggleCalendar(calendar.id, !!$event)"
                     />
                   </template>
                   <VListItemTitle class="text-body-2">
@@ -161,39 +161,6 @@
       />
     </VOverlay>
 
-    <!-- Error snackbar -->
-    <VSnackbar
-      v-model="errorSnackbar"
-      color="error"
-      timeout="5000"
-    >
-      {{ errorMessage }}
-      <template #actions>
-        <VBtn
-          variant="text"
-          @click="errorSnackbar = false"
-        >
-          Close
-        </VBtn>
-      </template>
-    </VSnackbar>
-
-    <!-- Success snackbar -->
-    <VSnackbar
-      v-model="successSnackbar"
-      color="success"
-      timeout="3000"
-    >
-      {{ successMessage }}
-      <template #actions>
-        <VBtn
-          variant="text"
-          @click="successSnackbar = false"
-        >
-          Close
-        </VBtn>
-      </template>
-    </VSnackbar>
   </div>
 </template>
 
@@ -242,10 +209,7 @@ const calendarEvents = ref<CalendarEvent[]>([]);
 const availableCalendars = ref<CalendarOption[]>([]);
 const selectedCalendarIds = ref<string[]>([]);
 const isLoading = ref(false);
-const errorSnackbar = ref(false);
-const errorMessage = ref("");
-const successSnackbar = ref(false);
-const successMessage = ref("");
+const snackbarStore = useSnackbarStore();
 
 // Default values for new events
 const defaultCalendarId = ref("");
@@ -298,7 +262,7 @@ const loadEvents = async () => {
     const events = await getAggregatedEvents();
     calendarEvents.value = events.map(formatEventForCalendar);
   } catch {
-    showErrorMessage("Failed to load events");
+    snackbarStore.error("Error", "Failed to load events");
   } finally {
     isLoading.value = false;
   }
@@ -327,7 +291,7 @@ const loadCalendars = async () => {
       defaultCalendarId.value = availableCalendars.value[0].id;
     }
   } catch {
-    showErrorMessage("Failed to load calendars");
+    snackbarStore.error("Error", "Failed to load calendars");
   }
 };
 
@@ -385,10 +349,10 @@ const handleDateSelect = (start: Date, end: Date, allDay: boolean) => {
 const handleEventDrop = async (eventId: string, newStart: Date, newEnd: Date) => {
   try {
     await updateEventDates(eventId, newStart, newEnd);
-    showSuccessMessage("Event updated successfully");
+    snackbarStore.success("Success", "Event updated successfully");
     await loadEvents(); // Refresh events
   } catch {
-    showErrorMessage("Failed to update event");
+    snackbarStore.error("Error", "Failed to update event");
     // Revert the change by reloading events
     await loadEvents();
   }
@@ -404,16 +368,16 @@ const handleEventSubmit = async (eventData: EventData) => {
 
     if (modalMode.value === "create") {
       await createEvent(eventData);
-      showSuccessMessage("Event created successfully");
+      snackbarStore.success("Success", "Event created successfully");
     } else if (eventData.id) {
       await updateEvent(eventData.id, eventData);
-      showSuccessMessage("Event updated successfully");
+      snackbarStore.success("Success", "Event updated successfully");
     }
 
     showEventModal.value = false;
     await loadEvents(); // Refresh events
   } catch {
-    showErrorMessage(modalMode.value === "create" ? "Failed to create event" : "Failed to update event");
+    snackbarStore.error("Error", modalMode.value === "create" ? "Failed to create event" : "Failed to update event");
   } finally {
     isLoading.value = false;
   }
@@ -423,26 +387,16 @@ const handleEventDelete = async (eventId: string) => {
   try {
     isLoading.value = true;
     await deleteEvent(eventId);
-    showSuccessMessage("Event deleted successfully");
+    snackbarStore.success("Success", "Event deleted successfully");
     showEventModal.value = false;
     await loadEvents(); // Refresh events
   } catch {
-    showErrorMessage("Failed to delete event");
+    snackbarStore.error("Error", "Failed to delete event");
   } finally {
     isLoading.value = false;
   }
 };
 
-// Utility functions
-const showErrorMessage = (message: string) => {
-  errorMessage.value = message;
-  errorSnackbar.value = true;
-};
-
-const showSuccessMessage = (message: string) => {
-  successMessage.value = message;
-  successSnackbar.value = true;
-};
 </script>
 
 <style scoped>

@@ -85,42 +85,6 @@
       </div>
     </VOverlay>
 
-    <!-- Notifications -->
-    <VSnackbar
-      v-model="errorSnackbar"
-      color="error"
-      timeout="5000"
-      class="notification-snackbar"
-    >
-      {{ errorMessage }}
-      <template #actions>
-        <VBtn
-          variant="text"
-          size="small"
-          @click="errorSnackbar = false"
-        >
-          Close
-        </VBtn>
-      </template>
-    </VSnackbar>
-
-    <VSnackbar
-      v-model="successSnackbar"
-      color="success"
-      timeout="3000"
-      class="notification-snackbar"
-    >
-      {{ successMessage }}
-      <template #actions>
-        <VBtn
-          variant="text"
-          size="small"
-          @click="successSnackbar = false"
-        >
-          Close
-        </VBtn>
-      </template>
-    </VSnackbar>
   </div>
 </template>
 
@@ -132,7 +96,6 @@ import type { CalendarEvent } from "~/components/CalendarView.vue";
 import type { EventData, CalendarOption } from "~/components/EventModal.vue";
 import type { FilterOptions } from "~/components/FilterPanel.vue";
 import { useEvents } from "~/composables/useEvents";
-import { useToast } from "~/composables/useToast";
 
 // Page metadata
 definePageMeta({
@@ -162,7 +125,6 @@ const isAdmin = computed(() => currentUser.value?.roles?.includes("admin") || fa
 // Composables
 const { getAggregatedEvents, createEvent, updateEvent, deleteEvent, formatEventForCalendar, updateEventDates } =
   useEvents();
-const { success: showSuccessToast, error: showErrorToast } = useToast();
 
 // State
 const calendarRef = ref();
@@ -172,10 +134,7 @@ const modalMode = ref<"create" | "edit">("create");
 const calendarEvents = ref<CalendarEvent[]>([]);
 const availableCalendars = ref<CalendarOption[]>([]);
 const isLoading = ref(false);
-const errorSnackbar = ref(false);
-const errorMessage = ref("");
-const successSnackbar = ref(false);
-const successMessage = ref("");
+const snackbarStore = useSnackbarStore();
 
 // Animation state (keeping for future use)
 const animatedTotalEvents = ref(0);
@@ -293,7 +252,7 @@ const loadCalendars = async () => {
       defaultCalendarId.value = availableCalendars.value[0].id;
     }
   } catch {
-    showErrorMessage("Failed to load calendars");
+    snackbarStore.error("Error", "Failed to load calendars");
   }
 };
 
@@ -322,7 +281,7 @@ const loadEvents = async () => {
     const events = await getAggregatedEvents(filters);
     calendarEvents.value = events.map(formatEventForCalendar);
   } catch {
-    showErrorMessage("Failed to load events");
+    snackbarStore.error("Error", "Failed to load events");
   } finally {
     isLoading.value = false;
   }
@@ -367,10 +326,10 @@ const handleDateSelect = (start: Date, end: Date, allDay: boolean) => {
 const handleEventDrop = async (eventId: string, newStart: Date, newEnd: Date) => {
   try {
     await updateEventDates(eventId, newStart, newEnd);
-    showSuccessMessage("Event updated successfully");
+    snackbarStore.success("Success", "Event updated successfully");
     await loadEvents();
   } catch {
-    showErrorMessage("Failed to update event");
+    snackbarStore.error("Error", "Failed to update event");
     calendarRef.value?.refetchEvents();
   }
 };
@@ -388,41 +347,30 @@ const handleEventSubmit = async (eventData: EventData) => {
   try {
     if (modalMode.value === "create") {
       await createEvent(eventData);
-      showSuccessMessage("Event created successfully");
+      snackbarStore.success("Success", "Event created successfully");
     } else if (selectedEvent.value?.id) {
       await updateEvent(selectedEvent.value.id, eventData);
-      showSuccessMessage("Event updated successfully");
+      snackbarStore.success("Success", "Event updated successfully");
     }
     showEventModal.value = false;
     await loadEvents();
   } catch {
-    showErrorMessage(`Failed to ${modalMode.value} event`);
+    snackbarStore.error("Error", `Failed to ${modalMode.value} event`);
   }
 };
 
 const handleEventDelete = async (eventId: string) => {
   try {
     await deleteEvent(eventId);
-    showSuccessMessage("Event deleted successfully");
+    snackbarStore.success("Success", "Event deleted successfully");
     showEventModal.value = false;
     await loadEvents();
   } catch {
-    showErrorMessage("Failed to delete event");
+    snackbarStore.error("Error", "Failed to delete event");
   }
 };
 
 // Utility functions
-const showErrorMessage = (message: string) => {
-  showErrorToast("Error", message);
-  errorMessage.value = message;
-  errorSnackbar.value = true;
-};
-
-const showSuccessMessage = (message: string) => {
-  showSuccessToast("Success", message);
-  successMessage.value = message;
-  successSnackbar.value = true;
-};
 
 // Lifecycle
 onMounted(async () => {

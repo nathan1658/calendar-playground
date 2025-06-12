@@ -196,22 +196,6 @@
       </VCol>
     </VRow>
 
-    <!-- Error snackbar -->
-    <VSnackbar
-      v-model="errorSnackbar"
-      color="error"
-      timeout="5000"
-    >
-      {{ errorMessage }}
-      <template #actions>
-        <VBtn
-          variant="text"
-          @click="errorSnackbar = false"
-        >
-          Close
-        </VBtn>
-      </template>
-    </VSnackbar>
   </VContainer>
 </template>
 
@@ -261,8 +245,7 @@ const isAdmin = computed(() => sessionData?.user?.roles?.includes("admin") || fa
 // Reactive state
 const calendars = ref<Calendar[]>([]);
 const loading = ref(false);
-const errorSnackbar = ref(false);
-const errorMessage = ref("");
+const snackbarStore = useSnackbarStore();
 
 // Table headers
 const headers = computed(() => [
@@ -284,7 +267,7 @@ const fetchCalendars = async () => {
       myAccess: getMyAccessLevel(cal),
     }));
   } catch {
-    showErrorMessage("Failed to fetch calendars");
+    snackbarStore.error("Error", "Failed to fetch calendars");
   } finally {
     loading.value = false;
   }
@@ -351,10 +334,6 @@ const manageCalendar = (calendar: Calendar) => {
   }
 };
 
-const showErrorMessage = (message: string) => {
-  errorMessage.value = message;
-  errorSnackbar.value = true;
-};
 
 // Set page head
 useHead({

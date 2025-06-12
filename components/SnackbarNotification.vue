@@ -1,11 +1,10 @@
 <template>
   <VSnackbar
     v-model="isVisible"
-    :timeout="timeout"
     :color="color"
-    :position="position"
-    :multi-line="multiLine"
-    class="toast-notification"
+    location="bottom right"
+    :timeout="timeout"
+    class="snackbar-notification"
     elevation="6"
   >
     <div class="d-flex align-center">
@@ -16,7 +15,12 @@
       />
       <div class="flex-grow-1">
         <div class="font-weight-medium">{{ title }}</div>
-        <div v-if="message" class="text-caption opacity-90">{{ message }}</div>
+        <div
+          v-if="message"
+          class="text-caption opacity-90"
+        >
+          {{ message }}
+        </div>
       </div>
     </div>
     
@@ -33,7 +37,7 @@
         icon
         variant="text"
         size="small"
-        @click="isVisible = false"
+        @click="close"
       >
         <VIcon icon="mdi-close" />
       </VBtn>
@@ -42,28 +46,19 @@
 </template>
 
 <script setup lang="ts">
-export interface ToastProps {
-  type?: 'success' | 'error' | 'warning' | 'info';
+interface Props {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
   title: string;
   message?: string;
-  timeout?: number;
-  position?: 'top' | 'bottom';
+  timeout: number;
   actionText?: string;
   onAction?: () => void;
-  multiLine?: boolean;
 }
 
-const props = withDefaults(defineProps<ToastProps>(), {
-  type: 'info',
-  timeout: 5000,
-  position: 'bottom',
-  multiLine: false,
-});
+const props = defineProps<Props>();
 
-const emit = defineEmits<{
-  close: [];
-  action: [];
-}>();
+const snackbarStore = useSnackbarStore();
 
 const isVisible = ref(true);
 
@@ -86,28 +81,26 @@ const iconName = computed(() => {
 });
 
 const handleAction = () => {
-  emit('action');
   if (props.onAction) {
     props.onAction();
   }
+  close();
+};
+
+const close = () => {
+  isVisible.value = false;
+  snackbarStore.remove(props.id);
 };
 
 watch(isVisible, (visible) => {
   if (!visible) {
-    emit('close');
+    snackbarStore.remove(props.id);
   }
 });
-
-// Auto-hide after timeout
-if (props.timeout > 0) {
-  setTimeout(() => {
-    isVisible.value = false;
-  }, props.timeout);
-}
 </script>
 
 <style scoped>
-.toast-notification {
+.snackbar-notification {
   border-radius: 12px;
   backdrop-filter: blur(20px);
 }
@@ -123,17 +116,17 @@ if (props.timeout > 0) {
 }
 
 /* Animation enhancements */
-.toast-notification {
+.snackbar-notification {
   animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes slideIn {
   from {
-    transform: translateY(100%);
+    transform: translateX(100%);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
