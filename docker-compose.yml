@@ -12,8 +12,8 @@ services:
       - NITRO_PORT=3000
       - NITRO_HOST=0.0.0.0
       - NUXT_MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/calendar?authSource=admin
-      - INITIAL_ADMIN_NAME=admin
-      - INITIAL_ADMIN_PASSWORD=password123
+      - NUXT_INITIAL_ADMIN_NAME=admin
+      - NUXT_INITIAL_ADMIN_PASSWORD=admin123
       - NUXT_AUTH_SECRET=your_secret_key_here
       - AUTH_ORIGIN=https://calendar.nathan1658.synology.me/api/auth
     restart: unless-stopped
