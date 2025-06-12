@@ -20,6 +20,13 @@
           class="mb-1"
           @click="navigateTo('/admin/users')"
         />
+
+        <VListItem
+          title="View Management"
+          :active="$route.path.startsWith('/admin/views')"
+          class="mb-1"
+          @click="navigateTo('/admin/views')"
+        />
       </VList>
     </VNavigationDrawer>
 

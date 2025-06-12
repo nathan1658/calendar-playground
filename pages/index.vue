@@ -310,8 +310,59 @@ const setCalendarRef = (calendarId: string, el: InstanceType<typeof CalendarView
 
 // Load events on mount
 onMounted(async () => {
-  await Promise.all([loadEvents(), loadCalendars()]);
+  await loadCalendars();
+  await checkViewParameter();
+  await loadEvents();
 });
+
+// Check for view parameter and load view configuration
+const checkViewParameter = async () => {
+  const route = useRoute();
+  const viewAlias = route.query.view as string;
+
+  console.log("Checking view parameter:", viewAlias);
+
+  if (viewAlias) {
+    try {
+      console.log("Fetching view config for alias:", viewAlias);
+      const response = await $fetch<{
+        view: {
+          id: string;
+          name: string;
+          alias: string;
+          selectedCalendarIds: string[];
+          selectedCalendars: Array<{
+            id: string;
+            name: string;
+            category?: string;
+          }>;
+          columnCount: number;
+          paddingPx: number;
+        };
+      }>(`/api/views/alias/${viewAlias}`);
+
+      const view = response.view;
+      console.log("Loaded view config:", view);
+
+      // Apply view configuration
+      selectedCalendarIds.value = view.selectedCalendarIds;
+      columnCount.value = view.columnCount;
+      paddingPx.value = view.paddingPx;
+
+      console.log("Applied view config - selectedCalendarIds:", selectedCalendarIds.value);
+
+      // Update page title to include view name
+      useHead({
+        title: `${view.name} - Calendar`,
+      });
+
+      snackbarStore.success("Success", `Loaded view: ${view.name}`);
+    } catch (error) {
+      console.error("Failed to load view:", error);
+      snackbarStore.error("Error", "Failed to load view configuration");
+    }
+  }
+};
 
 // Load events from API
 const loadEvents = async () => {
@@ -342,8 +393,11 @@ const loadCalendars = async () => {
       category: cal.category || "default",
     }));
 
-    // Initialize with all calendars selected
-    selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
+    // Initialize with all calendars selected only if no view parameter
+    const route = useRoute();
+    if (!route.query.view) {
+      selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
+    }
 
     if (availableCalendars.value.length > 0) {
       defaultCalendarId.value = availableCalendars.value[0].id;
