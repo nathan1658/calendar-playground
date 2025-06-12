@@ -41,13 +41,6 @@
           </VTab>
           <div class="mx-3">
             <VTab
-              value="calendar"
-              :active="$route.path === '/calendar'"
-              @click="navigateTo('/calendar')"
-            >
-              Calendar
-            </VTab>
-            <VTab
               v-if="isAdmin"
               value="admin"
               :active="$route.path.startsWith('/admin')"
@@ -94,12 +87,7 @@
               </template>
               <VListItemTitle>Create Event</VListItemTitle>
             </VListItem>
-            <VListItem to="/calendars">
-              <template #prepend>
-                <VIcon icon="mdi-calendar-multiple" />
-              </template>
-              <VListItemTitle>My Calendars</VListItemTitle>
-            </VListItem>
+
             <VDivider v-if="isAdmin" />
             <VListItem
               v-if="isAdmin"
@@ -212,7 +200,7 @@ const isAdmin = computed(() => currentUser.value?.roles?.includes("admin") || fa
 const activeTab = computed(() => {
   const path = route.path;
   if (path === "/") return "overview";
-  if (path === "/calendar") return "calendar";
+
   if (path.startsWith("/admin")) return "admin";
   return "overview";
 });

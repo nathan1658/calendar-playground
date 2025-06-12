@@ -13,6 +13,13 @@ export const loginSchema = z.object({
 // USER SCHEMAS
 // =============================================================================
 
+export const createUserSchema = z.object({
+  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
+  displayName: z.string().min(1).max(100),
+  password: z.string().min(6),
+  roles: z.array(z.enum(["admin", "user"])).min(1),
+});
+
 export const updateUserSchema = z.object({
   displayName: z.string().min(1).max(100).optional(),
   roles: z.array(z.enum(["admin", "user"])).optional(),
@@ -83,6 +90,7 @@ export const aggregatedEventsQuerySchema = z.object({
 // =============================================================================
 
 export type LoginInput = z.infer<typeof loginSchema>;
+export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type CreateCalendarInput = z.infer<typeof createCalendarSchema>;
 export type UpdateCalendarInput = z.infer<typeof updateCalendarSchema>;

@@ -1,59 +1,112 @@
 <template>
-  <div class="dashboard">
-    <!-- Header -->
-    <div class="dashboard-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="dashboard-title">
-            {{ isAdmin ? "All Calendars" : "My Calendar" }}
-          </h1>
-          <p class="dashboard-subtitle">Manage your events and schedule</p>
-        </div>
-        <VBtn
-          color="primary"
-          variant="flat"
-          prepend-icon="mdi-plus"
-          class="create-btn"
-          @click="openCreateEventModal"
+  <div class="calendar-page">
+    <VContainer fluid>
+      <VRow>
+        <!-- Calendar Selection Sidebar -->
+        <VCol cols="auto">
+          <VCard
+            width="300"
+            class="py-3"
+          >
+            <VCardItem>
+              <VCardTitle>
+                <VRow align="center">
+                  <VCol>
+                    <div class="d-flex align-center ga-2">
+                      <VIcon icon="mdi-calendar-multiple" />
+                      <div class="text-subtitle-1">Calendars</div>
+                      <VSpacer />
+                      <VBtn
+                        v-if="!allCalendarsSelected"
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        @click="selectAllCalendars"
+                      >
+                        Select All
+                      </VBtn>
+                      <VBtn
+                        v-else
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        @click="deselectAllCalendars"
+                      >
+                        Deselect All
+                      </VBtn>
+                    </div>
+                  </VCol>
+                </VRow>
+              </VCardTitle>
+            </VCardItem>
+
+            <VCardText class="pa-0">
+              <VList density="compact">
+                <VListItem
+                  v-for="calendar in availableCalendars"
+                  :key="calendar.id"
+                  class="pl-0"
+                >
+                  <template #prepend>
+                    <VCheckbox
+                      hide-details
+                      class="mx-2"
+                      :model-value="selectedCalendarIds.includes(calendar.id)"
+                      :color="getCalendarColor(calendar.category)"
+                      @update:model-value="toggleCalendar(calendar.id, !!$event)"
+                    />
+                  </template>
+                  <VListItemTitle class="text-body-2">
+                    {{ calendar.name }}
+                  </VListItemTitle>
+                  <VListItemSubtitle v-if="calendar.category">
+                    {{ calendar.category }}
+                  </VListItemSubtitle>
+                </VListItem>
+              </VList>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <!-- Main Calendar View -->
+        <VCol
+          cols="12"
+          md="8"
+          lg="9"
         >
-          New Event
-        </VBtn>
-      </div>
-    </div>
+          <VCard>
+            <VCardTitle>
+              <VRow align="center">
+                <VCol>
+                  <h2>Calendar</h2>
+                </VCol>
+                <VCol cols="auto">
+                  <VBtn
+                    color="primary"
+                    @click="openCreateModal"
+                  >
+                    <VIcon left>mdi-plus</VIcon>
+                    New Event
+                  </VBtn>
+                </VCol>
+              </VRow>
+            </VCardTitle>
 
-    <!-- Main Content -->
-    <div class="dashboard-content">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="sidebar-section">
-          <h3 class="section-title">Filters</h3>
-          <FilterPanel
-            v-model="activeFilters"
-            :calendars="availableCalendars"
-            :loading="isLoading"
-            class="filter-panel"
-            @apply="handleFilterChange"
-            @clear="handleFilterClear"
-          />
-        </div>
-      </aside>
-
-      <!-- Main Calendar Area -->
-      <main class="main-content">
-        <div class="calendar-container">
-          <CalendarView
-            ref="calendarRef"
-            :events="calendarEvents"
-            :height="600"
-            @event-click="handleEventClick"
-            @event-drop="handleEventDrop"
-            @event-resize="handleEventResize"
-            @date-select="handleDateSelect"
-            @view-change="handleViewChange"
-          />
-        </div>
-      </main>
-    </div>
+            <VCardText>
+              <CalendarView
+                ref="calendarRef"
+                :events="filteredCalendarEvents"
+                :height="600"
+                @event-click="handleEventClick"
+                @event-drop="handleEventDrop"
+                @event-resize="handleEventResize"
+                @date-select="handleDateSelect"
+              />
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+    </VContainer>
 
     <!-- Event Modal -->
     <EventModal
@@ -69,37 +122,30 @@
       @delete="handleEventDelete"
     />
 
-    <!-- Loading Overlay -->
+    <!-- Loading overlay -->
     <VOverlay
       v-model="isLoading"
-      class="loading-overlay"
+      class="align-center justify-center"
     >
-      <div class="loading-content">
-        <VProgressCircular
-          color="primary"
-          indeterminate
-          size="32"
-          width="3"
-        />
-        <p class="loading-text">Loading...</p>
-      </div>
+      <VProgressCircular
+        color="primary"
+        indeterminate
+        size="64"
+      />
     </VOverlay>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import CalendarView from "~/components/CalendarView.vue";
 import EventModal from "~/components/EventModal.vue";
-import FilterPanel from "~/components/FilterPanel.vue";
 import type { CalendarEvent } from "~/components/CalendarView.vue";
 import type { EventData, CalendarOption } from "~/components/EventModal.vue";
-import type { FilterOptions } from "~/components/FilterPanel.vue";
 import { useEvents } from "~/composables/useEvents";
 
 // Page metadata
 definePageMeta({
-  title: "Calendar Dashboard",
+  title: "Calendar",
   requiresAuth: true,
 });
 
@@ -126,30 +172,16 @@ const isAdmin = computed(() => currentUser.value?.roles?.includes("admin") || fa
 const { getAggregatedEvents, createEvent, updateEvent, deleteEvent, formatEventForCalendar, updateEventDates } =
   useEvents();
 
-// State
+// Reactive state
 const calendarRef = ref();
 const showEventModal = ref(false);
 const selectedEvent = ref<EventData | null>(null);
 const modalMode = ref<"create" | "edit">("create");
 const calendarEvents = ref<CalendarEvent[]>([]);
 const availableCalendars = ref<CalendarOption[]>([]);
+const selectedCalendarIds = ref<string[]>([]);
 const isLoading = ref(false);
 const snackbarStore = useSnackbarStore();
-
-// Animation state (keeping for future use)
-const animatedTotalEvents = ref(0);
-const animatedActiveUsers = ref(0);
-const animatedRevenue = ref(0);
-const animatedConversion = ref(0);
-
-// Filter state
-const activeFilters = ref<FilterOptions>({
-  startDate: "",
-  endDate: "",
-  search: "",
-  selectedCalendarIds: [],
-  category: "",
-});
 
 // Default values for new events
 const defaultCalendarId = ref("");
@@ -158,76 +190,57 @@ const defaultEndTime = ref(new Date(Date.now() + 60 * 60 * 1000));
 const defaultAllDay = ref(false);
 
 // Computed properties
-const editableCalendars = computed(() =>
-  availableCalendars.value.filter(
-    cal =>
-      // Show calendars the user can edit (for admins, all calendars; for users, only their editable ones)
-      isAdmin.value || activeFilters.value.selectedCalendarIds.includes(cal.id),
-  ),
-);
+const allCalendarsSelected = computed(() => {
+  return selectedCalendarIds.value.length === availableCalendars.value.length;
+});
 
-// Animation functions
-const animateValue = (ref: Ref<number>, targetValue: number, duration = 2000) => {
-  const startValue = ref.value;
-  const startTime = Date.now();
+const editableCalendars = computed(() => {
+  // Show calendars the user can edit
+  return availableCalendars.value.filter(cal => isAdmin.value || selectedCalendarIds.value.includes(cal.id));
+});
 
-  const animate = () => {
-    const currentTime = Date.now();
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-
-    // Easing function for smooth animation
-    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-
-    ref.value = Math.round(startValue + (targetValue - startValue) * easeOutQuart);
-
-    if (progress < 1) {
-      requestAnimationFrame(animate);
-    }
-  };
-
-  requestAnimationFrame(animate);
-};
-
-const startCounterAnimations = () => {
-  nextTick(() => {
-    animateValue(animatedTotalEvents, 2847, 2500);
-    animateValue(animatedActiveUsers, 1234, 2200);
-    animateValue(animatedRevenue, 45678, 2800);
-    animateValue(animatedConversion, 3.2, 2000);
+const filteredCalendarEvents = computed(() => {
+  if (selectedCalendarIds.value.length === 0) {
+    return [];
+  }
+  return calendarEvents.value.filter(event => {
+    const calendarId = event.extendedProps?.calendarId;
+    return calendarId && selectedCalendarIds.value.includes(calendarId);
   });
+});
+
+// Calendar color mapping
+const getCalendarColor = (category?: string): string => {
+  const colorMap: Record<string, string> = {
+    work: "#1976D2",
+    personal: "#388E3C",
+    meetings: "#F57C00",
+    holidays: "#D32F2F",
+    projects: "#7B1FA2",
+    default: "#3B82F6",
+  };
+  return colorMap[category || "default"] || colorMap.default;
 };
 
-// Real-time counter updates
-const updateRealTimeCounters = () => {
-  // Simulate small fluctuations in real-time data
-  const eventDelta = Math.floor(Math.random() * 10) - 5;
-  const userDelta = Math.floor(Math.random() * 5) - 2;
-  const revenueDelta = Math.floor(Math.random() * 1000) - 500;
-  const conversionDelta = Math.random() * 0.2 - 0.1;
+// Load events on mount
+onMounted(async () => {
+  await Promise.all([loadEvents(), loadCalendars()]);
+});
 
-  animateValue(animatedTotalEvents, 2847 + eventDelta, 1000);
-  animateValue(animatedActiveUsers, 1234 + userDelta, 1000);
-  animateValue(animatedRevenue, 45678 + revenueDelta, 1000);
-  animateValue(animatedConversion, Math.max(0, 3.2 + conversionDelta), 1000);
-};
-
-// Set up real-time updates every 30 seconds
-let realTimeInterval: NodeJS.Timeout | null = null;
-
-const startRealTimeUpdates = () => {
-  if (realTimeInterval) clearInterval(realTimeInterval);
-  realTimeInterval = setInterval(updateRealTimeCounters, 30000);
-};
-
-const stopRealTimeUpdates = () => {
-  if (realTimeInterval) {
-    clearInterval(realTimeInterval);
-    realTimeInterval = null;
+// Load events from API
+const loadEvents = async () => {
+  try {
+    isLoading.value = true;
+    const events = await getAggregatedEvents();
+    calendarEvents.value = events.map(formatEventForCalendar);
+  } catch {
+    snackbarStore.error("Error", "Failed to load events");
+  } finally {
+    isLoading.value = false;
   }
 };
 
-// Methods
+// Load available calendars
 const loadCalendars = async () => {
   try {
     interface CalendarApiResponse {
@@ -243,10 +256,8 @@ const loadCalendars = async () => {
       category: cal.category || "default",
     }));
 
-    // Initialize filter with all calendars selected
-    if (activeFilters.value.selectedCalendarIds.length === 0) {
-      activeFilters.value.selectedCalendarIds = availableCalendars.value.map(cal => cal.id);
-    }
+    // Initialize with all calendars selected
+    selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
 
     if (availableCalendars.value.length > 0) {
       defaultCalendarId.value = availableCalendars.value[0].id;
@@ -256,53 +267,37 @@ const loadCalendars = async () => {
   }
 };
 
-const loadEvents = async () => {
-  try {
-    isLoading.value = true;
-
-    // Build filter object for API
-    interface EventFilters {
-      start?: string;
-      end?: string;
-      search?: string;
-      category?: string;
-      calendarIds?: string;
+// Calendar selection methods
+const toggleCalendar = (calendarId: string, selected: boolean) => {
+  if (selected) {
+    if (!selectedCalendarIds.value.includes(calendarId)) {
+      selectedCalendarIds.value.push(calendarId);
     }
-
-    const filters: EventFilters = {};
-    if (activeFilters.value.startDate) filters.start = new Date(activeFilters.value.startDate).toISOString();
-    if (activeFilters.value.endDate) filters.end = new Date(activeFilters.value.endDate).toISOString();
-    if (activeFilters.value.search) filters.search = activeFilters.value.search;
-    if (activeFilters.value.category) filters.category = activeFilters.value.category;
-    if (activeFilters.value.selectedCalendarIds.length > 0) {
-      filters.calendarIds = activeFilters.value.selectedCalendarIds.join(",");
+  } else {
+    const index = selectedCalendarIds.value.indexOf(calendarId);
+    if (index > -1) {
+      selectedCalendarIds.value.splice(index, 1);
     }
-
-    const events = await getAggregatedEvents(filters);
-    calendarEvents.value = events.map(formatEventForCalendar);
-  } catch {
-    snackbarStore.error("Error", "Failed to load events");
-  } finally {
-    isLoading.value = false;
   }
 };
 
+const selectAllCalendars = () => {
+  selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
+};
+
+const deselectAllCalendars = () => {
+  selectedCalendarIds.value = [];
+};
+
 // Event handlers
-const handleFilterChange = () => {
-  loadEvents();
-};
-
-const handleFilterClear = () => {
-  loadEvents();
-};
-
-const openCreateEventModal = () => {
+const openCreateModal = () => {
   selectedEvent.value = null;
   modalMode.value = "create";
   showEventModal.value = true;
 };
 
 const handleEventClick = (event: CalendarEvent) => {
+  // Convert CalendarEvent to EventData for editing
   selectedEvent.value = {
     id: event.id,
     subject: event.title,
@@ -320,17 +315,18 @@ const handleDateSelect = (start: Date, end: Date, allDay: boolean) => {
   defaultStartTime.value = start;
   defaultEndTime.value = end;
   defaultAllDay.value = allDay;
-  openCreateEventModal();
+  openCreateModal();
 };
 
 const handleEventDrop = async (eventId: string, newStart: Date, newEnd: Date) => {
   try {
     await updateEventDates(eventId, newStart, newEnd);
     snackbarStore.success("Success", "Event updated successfully");
-    await loadEvents();
+    await loadEvents(); // Refresh events
   } catch {
     snackbarStore.error("Error", "Failed to update event");
-    calendarRef.value?.refetchEvents();
+    // Revert the change by reloading events
+    await loadEvents();
   }
 };
 
@@ -338,250 +334,45 @@ const handleEventResize = async (eventId: string, newStart: Date, newEnd: Date) 
   await handleEventDrop(eventId, newStart, newEnd);
 };
 
-const handleViewChange = (view: string) => {
-  // Could be used for view-specific logic
-  console.log("Calendar view changed to:", view);
-};
-
 const handleEventSubmit = async (eventData: EventData) => {
   try {
+    isLoading.value = true;
+
     if (modalMode.value === "create") {
       await createEvent(eventData);
       snackbarStore.success("Success", "Event created successfully");
-    } else if (selectedEvent.value?.id) {
-      await updateEvent(selectedEvent.value.id, eventData);
+    } else if (eventData.id) {
+      await updateEvent(eventData.id, eventData);
       snackbarStore.success("Success", "Event updated successfully");
     }
+
     showEventModal.value = false;
-    await loadEvents();
+    await loadEvents(); // Refresh events
   } catch {
-    snackbarStore.error("Error", `Failed to ${modalMode.value} event`);
+    snackbarStore.error("Error", modalMode.value === "create" ? "Failed to create event" : "Failed to update event");
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const handleEventDelete = async (eventId: string) => {
   try {
+    isLoading.value = true;
     await deleteEvent(eventId);
     snackbarStore.success("Success", "Event deleted successfully");
     showEventModal.value = false;
-    await loadEvents();
+    await loadEvents(); // Refresh events
   } catch {
     snackbarStore.error("Error", "Failed to delete event");
+  } finally {
+    isLoading.value = false;
   }
 };
-
-// Utility functions
-
-// Lifecycle
-onMounted(async () => {
-  await loadCalendars();
-  await loadEvents();
-
-  // Start counter animations after a short delay
-  setTimeout(() => {
-    startCounterAnimations();
-  }, 300);
-
-  // Start real-time updates
-  startRealTimeUpdates();
-});
-
-onUnmounted(() => {
-  stopRealTimeUpdates();
-});
 </script>
 
 <style scoped>
-/* Reset and Base Styles */
-.dashboard {
-  min-height: 100vh;
-  background-color: #fafafa;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-/* Header */
-.dashboard-header {
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 24px 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title-section {
-  flex: 1;
-}
-
-.dashboard-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 4px 0;
-  line-height: 1.2;
-}
-
-.dashboard-subtitle {
-  font-size: 16px;
-  color: #6b7280;
-  margin: 0;
-  font-weight: 400;
-}
-
-.create-btn {
-  border-radius: 8px;
-  text-transform: none;
-  font-weight: 500;
-  padding: 0 20px;
-  height: 40px;
-}
-
-/* Main Content Layout */
-.dashboard-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 32px 24px;
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 32px;
-  align-items: start;
-}
-
-/* Sidebar */
-.sidebar {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  padding: 24px;
-  position: sticky;
-  top: 120px;
-}
-
-.sidebar-section {
-  margin-bottom: 24px;
-}
-
-.sidebar-section:last-child {
-  margin-bottom: 0;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-  margin: 0 0 16px 0;
-}
-
-.filter-panel {
-  /* Remove any custom styling to let the component handle its own appearance */
-}
-
-/* Main Content */
-.main-content {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+.calendar-page {
+  height: 100vh;
   overflow: hidden;
-}
-
-.calendar-container {
-  padding: 24px;
-}
-
-/* Loading States */
-.loading-overlay {
-  background-color: rgba(255, 255, 255, 0.9);
-}
-
-.loading-content {
-  text-align: center;
-  color: #374151;
-}
-
-.loading-text {
-  margin: 12px 0 0 0;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Notifications */
-.notification-snackbar {
-  font-weight: 500;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .sidebar {
-    position: static;
-    order: 2;
-  }
-
-  .main-content {
-    order: 1;
-  }
-}
-
-@media (max-width: 768px) {
-  .header-content {
-    padding: 0 16px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .dashboard-content {
-    padding: 24px 16px;
-    gap: 16px;
-  }
-
-  .sidebar {
-    padding: 16px;
-  }
-
-  .calendar-container {
-    padding: 16px;
-  }
-
-  .dashboard-title {
-    font-size: 24px;
-  }
-}
-
-/* Remove all complex animations and effects */
-* {
-  transition: none !important;
-  animation: none !important;
-  backdrop-filter: none !important;
-  transform: none !important;
-}
-
-/* Simple hover states only */
-.create-btn:hover {
-  opacity: 0.9;
-}
-
-.sidebar:hover,
-.main-content:hover {
-  border-color: #d1d5db;
-}
-
-/* Focus states for accessibility */
-.create-btn:focus {
-  outline: 2px solid rgb(var(--v-theme-primary));
-  outline-offset: 2px;
 }
 </style>

@@ -144,7 +144,7 @@ const createUser = async () => {
 
   creating.value = true;
   try {
-    await $fetch("/api/auth/register", {
+    await $fetch("/api/users", {
       method: "POST",
       body: {
         username: formData.value.username,
