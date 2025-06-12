@@ -54,8 +54,6 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV NITRO_PORT=3000
 ENV NITRO_HOST=0.0.0.0
-ENV AUTH_ORIGIN=$AUTH_ORIGIN
-ENV NUXT_AUTH_ORIGIN=$NUXT_AUTH_ORIGIN
 
 # Start the application
 CMD ["node", ".output/server/index.mjs"]

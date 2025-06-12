@@ -5,9 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - NUXT_AUTH_ORIGIN=https://calendar.nathan1658.synology.me/
-        - AUTH_ORIGIN=https://calendar.nathan1658.synology.me/
     ports:
       - "8087:3000"
     environment:
@@ -17,6 +14,7 @@ services:
       - NUXT_MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/calendar?authSource=admin
       - INITIAL_ADMIN_NAME=admin
       - INITIAL_ADMIN_PASSWORD=password123
+      - NUXT_AUTH_ORIGIN=https://calendar.nathan1658.synology.me
     restart: unless-stopped
     networks:
       - app-network
