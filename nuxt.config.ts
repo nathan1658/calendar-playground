@@ -30,13 +30,6 @@ export default defineNuxtConfig({
     authSecret: process.env.NUXT_AUTH_SECRET,
     initialAdminName: process.env.INITIAL_ADMIN_NAME || "admin",
     initialAdminPassword: process.env.INITIAL_ADMIN_PASSWORD || "password",
-    authOrigin: process.env.NUXT_AUTH_ORIGIN || "http://localhost:3000",
-    // Public keys (exposed to client-side)
-    public: {
-      authJs: {
-        baseUrl: process.env.NUXT_AUTH_ORIGIN,
-      },
-    },
   },
   i18n: {
     langDir: "./i18n/locales",
