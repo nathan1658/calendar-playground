@@ -1,111 +1,165 @@
 <template>
   <div class="calendar-page">
     <VContainer fluid>
-      <VRow>
-        <!-- Calendar Selection Sidebar -->
-        <VCol cols="auto">
-          <VCard
-            width="300"
-            class="py-3"
+      <!-- Top Toolbar -->
+      <VCard class="mb-4">
+        <VCardText>
+          <VRow
+            align="center"
+            dense
           >
-            <VCardItem>
-              <VCardTitle>
-                <VRow align="center">
-                  <VCol>
-                    <div class="d-flex align-center ga-2">
-                      <VIcon icon="mdi-calendar-multiple" />
-                      <div class="text-subtitle-1">Calendars</div>
-                      <VSpacer />
-                      <VBtn
-                        v-if="!allCalendarsSelected"
-                        variant="text"
-                        size="small"
+            <!-- Calendar Selection -->
+            <VCol
+              cols="12"
+              sm="6"
+              md="4"
+            >
+              <VSelect
+                v-model="selectedCalendarIds"
+                :items="availableCalendars"
+                item-title="name"
+                item-value="id"
+                label="Select Calendars"
+                multiple
+                chips
+                closable-chips
+                density="compact"
+                variant="outlined"
+              >
+                <template #prepend-item>
+                  <VListItem @click="toggleAllCalendars">
+                    <template #prepend>
+                      <VCheckbox
+                        :model-value="allCalendarsSelected"
+                        :indeterminate="someCalendarsSelected && !allCalendarsSelected"
                         color="primary"
-                        @click="selectAllCalendars"
-                      >
-                        Select All
-                      </VBtn>
-                      <VBtn
-                        v-else
-                        variant="text"
-                        size="small"
-                        color="primary"
-                        @click="deselectAllCalendars"
-                      >
-                        Deselect All
-                      </VBtn>
-                    </div>
-                  </VCol>
-                </VRow>
-              </VCardTitle>
-            </VCardItem>
+                      />
+                    </template>
+                    <VListItemTitle>
+                      {{ allCalendarsSelected ? "Deselect All" : "Select All" }}
+                    </VListItemTitle>
+                  </VListItem>
+                  <VDivider />
+                </template>
+              </VSelect>
+            </VCol>
 
-            <VCardText class="pa-0">
-              <VList density="compact">
-                <VListItem
-                  v-for="calendar in availableCalendars"
-                  :key="calendar.id"
-                  class="pl-0"
-                >
-                  <template #prepend>
-                    <VCheckbox
-                      hide-details
-                      class="mx-2"
-                      :model-value="selectedCalendarIds.includes(calendar.id)"
-                      :color="getCalendarColor(calendar.category)"
-                      @update:model-value="toggleCalendar(calendar.id, !!$event)"
-                    />
-                  </template>
-                  <VListItemTitle class="text-body-2">
-                    {{ calendar.name }}
-                  </VListItemTitle>
-                  <VListItemSubtitle v-if="calendar.category">
-                    {{ calendar.category }}
-                  </VListItemSubtitle>
-                </VListItem>
-              </VList>
-            </VCardText>
-          </VCard>
-        </VCol>
-
-        <!-- Main Calendar View -->
-        <VCol
-          cols="12"
-          md="8"
-          lg="9"
-        >
-          <VCard>
-            <VCardTitle>
-              <VRow align="center">
-                <VCol>
-                  <h2>Calendar</h2>
-                </VCol>
-                <VCol cols="auto">
-                  <VBtn
-                    color="primary"
-                    @click="openCreateModal"
-                  >
-                    <VIcon left>mdi-plus</VIcon>
-                    New Event
-                  </VBtn>
-                </VCol>
-              </VRow>
-            </VCardTitle>
-
-            <VCardText>
-              <CalendarView
-                ref="calendarRef"
-                :events="filteredCalendarEvents"
-                :height="600"
-                @event-click="handleEventClick"
-                @event-drop="handleEventDrop"
-                @event-resize="handleEventResize"
-                @date-select="handleDateSelect"
+            <!-- Column Count -->
+            <VCol
+              cols="6"
+              sm="3"
+              md="2"
+            >
+              <VSelect
+                v-model="columnCount"
+                :items="columnOptions"
+                label="Columns"
+                density="compact"
+                variant="outlined"
               />
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
+            </VCol>
+
+            <!-- Padding -->
+            <VCol
+              cols="6"
+              sm="3"
+              md="2"
+            >
+              <VTextField
+                v-model.number="paddingPx"
+                label="Padding (px)"
+                type="number"
+                min="0"
+                max="50"
+                density="compact"
+                variant="outlined"
+              />
+            </VCol>
+
+            <!-- New Event Button -->
+            <VCol
+              v-if="isAdmin"
+              cols="auto"
+              class="ml-auto"
+            >
+              <VBtn
+                color="primary"
+                @click="openCreateModal"
+              >
+                <VIcon left>mdi-plus</VIcon>
+                New Event
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+
+      <!-- Calendar Grid -->
+      <div
+        v-if="selectedCalendarIds.length > 0"
+        class="calendar-grid"
+        :style="{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
+          gap: `${paddingPx}px`,
+        }"
+      >
+        <VCard
+          v-for="calendar in selectedCalendars"
+          :key="calendar.id"
+          class="calendar-card"
+        >
+          <VCardTitle class="d-flex align-center pa-3">
+            <VIcon
+              :color="getCalendarColor(calendar.category)"
+              class="mr-2"
+            >
+              mdi-calendar
+            </VIcon>
+            <span>{{ calendar.name }}</span>
+            <VSpacer />
+            <VChip
+              :color="getCalendarColor(calendar.category)"
+              size="small"
+              variant="tonal"
+            >
+              {{ calendar.category || "default" }}
+            </VChip>
+          </VCardTitle>
+
+          <VCardText class="pa-0">
+            <CalendarView
+              :ref="(el: any) => setCalendarRef(calendar.id, el)"
+              :events="getCalendarEvents(calendar.id)"
+              :height="600"
+              @event-click="handleEventClick"
+              @event-drop="handleEventDrop"
+              @event-resize="handleEventResize"
+              @date-select="(start, end, allDay) => handleDateSelect(start, end, allDay, calendar.id)"
+            />
+          </VCardText>
+        </VCard>
+      </div>
+
+      <!-- Empty State -->
+      <VCard
+        v-else
+        class="text-center pa-8"
+      >
+        <VCardText>
+          <VIcon
+            size="64"
+            color="grey-lighten-1"
+            class="mb-4"
+          >
+            mdi-calendar-outline
+          </VIcon>
+          <h3 class="text-h6 mb-2">No Calendars Selected</h3>
+          <p class="text-body-2 text-medium-emphasis">
+            Please select at least one calendar from the toolbar above to view events.
+          </p>
+        </VCardText>
+      </VCard>
     </VContainer>
 
     <!-- Event Modal -->
@@ -173,7 +227,7 @@ const { getAggregatedEvents, createEvent, updateEvent, deleteEvent, formatEventF
   useEvents();
 
 // Reactive state
-const calendarRef = ref();
+const calendarRefs = ref<Record<string, InstanceType<typeof CalendarView> | null>>({});
 const showEventModal = ref(false);
 const selectedEvent = ref<EventData | null>(null);
 const modalMode = ref<"create" | "edit">("create");
@@ -183,6 +237,18 @@ const selectedCalendarIds = ref<string[]>([]);
 const isLoading = ref(false);
 const snackbarStore = useSnackbarStore();
 
+// Toolbar state
+const columnCount = ref(2);
+const paddingPx = ref(16);
+
+// Column options
+const columnOptions = [
+  { title: "1 Column", value: 1 },
+  { title: "2 Columns", value: 2 },
+  { title: "3 Columns", value: 3 },
+  { title: "4 Columns", value: 4 },
+];
+
 // Default values for new events
 const defaultCalendarId = ref("");
 const defaultStartTime = ref(new Date());
@@ -191,7 +257,15 @@ const defaultAllDay = ref(false);
 
 // Computed properties
 const allCalendarsSelected = computed(() => {
-  return selectedCalendarIds.value.length === availableCalendars.value.length;
+  return selectedCalendarIds.value.length === availableCalendars.value.length && availableCalendars.value.length > 0;
+});
+
+const someCalendarsSelected = computed(() => {
+  return selectedCalendarIds.value.length > 0;
+});
+
+const selectedCalendars = computed(() => {
+  return availableCalendars.value.filter(cal => selectedCalendarIds.value.includes(cal.id));
 });
 
 const editableCalendars = computed(() => {
@@ -199,27 +273,39 @@ const editableCalendars = computed(() => {
   return availableCalendars.value.filter(cal => isAdmin.value || selectedCalendarIds.value.includes(cal.id));
 });
 
-const filteredCalendarEvents = computed(() => {
-  if (selectedCalendarIds.value.length === 0) {
-    return [];
-  }
-  return calendarEvents.value.filter(event => {
-    const calendarId = event.extendedProps?.calendarId;
-    return calendarId && selectedCalendarIds.value.includes(calendarId);
-  });
-});
-
 // Calendar color mapping
 const getCalendarColor = (category?: string): string => {
   const colorMap: Record<string, string> = {
-    work: "#1976D2",
-    personal: "#388E3C",
-    meetings: "#F57C00",
-    holidays: "#D32F2F",
-    projects: "#7B1FA2",
-    default: "#3B82F6",
+    work: "blue",
+    personal: "green",
+    meetings: "orange",
+    holidays: "red",
+    projects: "purple",
+    default: "primary",
   };
   return colorMap[category || "default"] || colorMap.default;
+};
+
+// Get events for a specific calendar
+const getCalendarEvents = (calendarId: string): CalendarEvent[] => {
+  return calendarEvents.value
+    .filter(event => event.extendedProps?.calendarId === calendarId)
+    .map(event => ({
+      ...event,
+      backgroundColor: getCalendarColor(availableCalendars.value.find(cal => cal.id === calendarId)?.category),
+      borderColor: getCalendarColor(availableCalendars.value.find(cal => cal.id === calendarId)?.category),
+    }));
+};
+
+// Set calendar ref
+const setCalendarRef = (calendarId: string, el: InstanceType<typeof CalendarView> | null) => {
+  if (el) {
+    calendarRefs.value[calendarId] = el;
+  } else {
+    // Use destructuring to remove the property safely
+    const { [calendarId]: removed, ...refs } = calendarRefs.value;
+    calendarRefs.value = refs;
+  }
 };
 
 // Load events on mount
@@ -268,25 +354,12 @@ const loadCalendars = async () => {
 };
 
 // Calendar selection methods
-const toggleCalendar = (calendarId: string, selected: boolean) => {
-  if (selected) {
-    if (!selectedCalendarIds.value.includes(calendarId)) {
-      selectedCalendarIds.value.push(calendarId);
-    }
+const toggleAllCalendars = () => {
+  if (allCalendarsSelected.value) {
+    selectedCalendarIds.value = [];
   } else {
-    const index = selectedCalendarIds.value.indexOf(calendarId);
-    if (index > -1) {
-      selectedCalendarIds.value.splice(index, 1);
-    }
+    selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
   }
-};
-
-const selectAllCalendars = () => {
-  selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
-};
-
-const deselectAllCalendars = () => {
-  selectedCalendarIds.value = [];
 };
 
 // Event handlers
@@ -311,10 +384,13 @@ const handleEventClick = (event: CalendarEvent) => {
   showEventModal.value = true;
 };
 
-const handleDateSelect = (start: Date, end: Date, allDay: boolean) => {
+const handleDateSelect = (start: Date, end: Date, allDay: boolean, calendarId?: string) => {
   defaultStartTime.value = start;
   defaultEndTime.value = end;
   defaultAllDay.value = allDay;
+  if (calendarId) {
+    defaultCalendarId.value = calendarId;
+  }
   openCreateModal();
 };
 
@@ -371,8 +447,17 @@ const handleEventDelete = async (eventId: string) => {
 </script>
 
 <style scoped>
-.calendar-page {
-  height: 100vh;
-  overflow: hidden;
+.calendar-card {
+  min-height: 650px;
+}
+
+.calendar-grid {
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .calendar-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 </style>

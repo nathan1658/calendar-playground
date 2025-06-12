@@ -17,7 +17,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
-import type { CalendarOptions, DateSelectArg, EventDropArg } from "@fullcalendar/core";
+import type { CalendarOptions, DateSelectArg, EventDropArg, EventApi } from "@fullcalendar/core";
 
 export interface CalendarEvent {
   id: string;
@@ -45,6 +45,8 @@ interface Props {
   height?: string | number;
   editable?: boolean;
   selectable?: boolean;
+  columnCount?: number;
+  paddingPx?: number;
 }
 
 interface Emits {
@@ -60,6 +62,8 @@ const props = withDefaults(defineProps<Props>(), {
   height: "auto",
   editable: true,
   selectable: true,
+  columnCount: 1,
+  paddingPx: 0,
 });
 
 const emit = defineEmits<Emits>();
@@ -111,13 +115,13 @@ const calendarOptions = computed<CalendarOptions>(() => ({
   },
   nowIndicator: true,
   navLinks: true,
-  eventClick: (info: { event: any }) => {
+  eventClick: (info: { event: EventApi }) => {
     handleEventClick(info);
   },
   eventDrop: (info: EventDropArg) => {
     handleEventDrop(info);
   },
-  eventResize: (info: { event: any }) => {
+  eventResize: (info: { event: EventApi }) => {
     handleEventResize(info);
   },
   select: (info: DateSelectArg) => {
@@ -128,17 +132,22 @@ const calendarOptions = computed<CalendarOptions>(() => ({
   },
 }));
 
-const handleEventClick = (info: { event: any }) => {
+const handleEventClick = (info: { event: EventApi }) => {
   const event = info.event;
   const calendarEvent: CalendarEvent = {
     id: event.id,
     title: event.title,
-    start: event.start,
-    end: event.end,
+    start: event.start!,
+    end: event.end!,
     allDay: event.allDay,
     backgroundColor: event.backgroundColor,
     borderColor: event.borderColor,
-    extendedProps: event.extendedProps,
+    extendedProps: {
+      description: event.extendedProps?.description,
+      calendarId: event.extendedProps?.calendarId || "",
+      calendarName: event.extendedProps?.calendarName || "",
+      createdBy: event.extendedProps?.createdBy,
+    },
   };
   emit("eventClick", calendarEvent);
 };
@@ -148,7 +157,7 @@ const handleEventDrop = (info: EventDropArg) => {
   emit("eventDrop", event.id, event.start!, event.end!);
 };
 
-const handleEventResize = (info: { event: any }) => {
+const handleEventResize = (info: { event: EventApi }) => {
   const event = info.event;
   emit("eventResize", event.id, event.start!, event.end!);
 };
