@@ -54,6 +54,18 @@ export interface IEvent extends IBaseDocument {
   createdBy: string;
 }
 
+/**
+ * View document interface
+ */
+export interface IView extends IBaseDocument {
+  name: string;
+  alias: string;
+  selectedCalendarIds: string[];
+  columnCount: number;
+  paddingPx: number;
+  createdBy: string;
+}
+
 // =============================================================================
 // POPULATED DOCUMENT INTERFACES
 // =============================================================================
@@ -88,6 +100,14 @@ export interface PopulatedCalendar extends Omit<ICalendar, 'ownerId' | 'permissi
  */
 export interface PopulatedEvent extends Omit<IEvent, 'calendarId' | 'createdBy'> {
   calendarId: PopulatedCalendar;
+  createdBy: PopulatedUser;
+}
+
+/**
+ * View document with populated references
+ */
+export interface PopulatedView extends Omit<IView, 'selectedCalendarIds' | 'createdBy'> {
+  selectedCalendarIds: PopulatedCalendar[];
   createdBy: PopulatedUser;
 }
 
