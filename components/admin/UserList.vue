@@ -1,7 +1,12 @@
 <template>
   <VCard>
-    <VCardTitle class="d-flex justify-space-between align-center">
-      <span>Users</span>
+    <!-- Enhanced Header -->
+    <VCardTitle class="d-flex justify-space-between align-center pa-6 bg-grey-lighten-5">
+      <div class="d-flex align-center">
+        <div>
+          <h2 class="text-h6 font-weight-bold text-grey-darken-4">User Management</h2>
+        </div>
+      </div>
       <VBtn
         color="primary"
         prepend-icon="mdi-plus"
@@ -10,8 +15,11 @@
         Add User
       </VBtn>
     </VCardTitle>
+    <VCardTitle class="d-flex justify-space-between align-center">
+      <span>Users</span>
+    </VCardTitle>
 
-    <VCardText>
+    <VCardText class="pa-0">
       <VDataTable
         :headers="headers"
         :items="users"

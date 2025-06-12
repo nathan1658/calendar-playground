@@ -24,7 +24,10 @@
     </VNavigationDrawer>
 
     <!-- Main Content Area -->
-    <div class="admin-main pa-6">
+    <div
+      class="admin-main pa-6 mx-auto"
+      style="max-width: 1200px"
+    >
       <!-- Child route content will be rendered here -->
       <NuxtPage />
     </div>

@@ -1,6 +1,6 @@
 import { User } from "~/server/models/User.model";
 import { requireAdminAuth } from "~/server/utils/auth";
-import { updateUserSchema, type UpdateUserInput } from "~/types/validation";
+import { updateUserSchema } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {

@@ -1,54 +1,56 @@
 <template>
-  <VSnackbar
-    v-model="isVisible"
-    :color="color"
-    location="bottom right"
-    :timeout="timeout"
-    class="snackbar-notification"
-    elevation="6"
-  >
-    <div class="d-flex align-center">
-      <VIcon
-        :icon="iconName"
-        class="mr-3"
-        size="24"
-      />
-      <div class="flex-grow-1">
-        <div class="font-weight-medium">{{ title }}</div>
-        <div
-          v-if="message"
-          class="text-caption opacity-90"
-        >
-          {{ message }}
+  <div>
+    <VSnackbar
+      v-model="isVisible"
+      :color="color"
+      location="bottom center"
+      :timeout="timeout"
+      class="snackbar-notification"
+      elevation="6"
+    >
+      <div class="d-flex align-center">
+        <VIcon
+          :icon="iconName"
+          class="mr-3"
+          size="24"
+        />
+        <div class="flex-grow-1">
+          <div class="font-weight-medium">{{ title }}</div>
+          <div
+            v-if="message"
+            class="text-caption opacity-90"
+          >
+            {{ message }}
+          </div>
         </div>
       </div>
-    </div>
-    
-    <template #actions>
-      <VBtn
-        v-if="actionText"
-        variant="text"
-        size="small"
-        @click="handleAction"
-      >
-        {{ actionText }}
-      </VBtn>
-      <VBtn
-        icon
-        variant="text"
-        size="small"
-        @click="close"
-      >
-        <VIcon icon="mdi-close" />
-      </VBtn>
-    </template>
-  </VSnackbar>
+
+      <template #actions>
+        <VBtn
+          v-if="actionText"
+          variant="text"
+          size="small"
+          @click="handleAction"
+        >
+          {{ actionText }}
+        </VBtn>
+        <VBtn
+          icon
+          variant="text"
+          size="small"
+          @click="close"
+        >
+          <VIcon icon="mdi-close" />
+        </VBtn>
+      </template>
+    </VSnackbar>
+  </div>
 </template>
 
 <script setup lang="ts">
 interface Props {
   id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
+  type: "success" | "error" | "warning" | "info";
   title: string;
   message?: string;
   timeout: number;
@@ -64,19 +66,27 @@ const isVisible = ref(true);
 
 const color = computed(() => {
   switch (props.type) {
-    case 'success': return 'success';
-    case 'error': return 'error';
-    case 'warning': return 'warning';
-    default: return 'info';
+    case "success":
+      return "success";
+    case "error":
+      return "error";
+    case "warning":
+      return "warning";
+    default:
+      return "info";
   }
 });
 
 const iconName = computed(() => {
   switch (props.type) {
-    case 'success': return 'mdi-check-circle';
-    case 'error': return 'mdi-alert-circle';
-    case 'warning': return 'mdi-alert';
-    default: return 'mdi-information';
+    case "success":
+      return "mdi-check-circle";
+    case "error":
+      return "mdi-alert-circle";
+    case "warning":
+      return "mdi-alert";
+    default:
+      return "mdi-information";
   }
 });
 
@@ -92,7 +102,7 @@ const close = () => {
   snackbarStore.remove(props.id);
 };
 
-watch(isVisible, (visible) => {
+watch(isVisible, visible => {
   if (!visible) {
     snackbarStore.remove(props.id);
   }
@@ -102,7 +112,6 @@ watch(isVisible, (visible) => {
 <style scoped>
 .snackbar-notification {
   border-radius: 12px;
-  backdrop-filter: blur(20px);
 }
 
 :deep(.v-snackbar__wrapper) {

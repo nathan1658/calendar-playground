@@ -24,23 +24,18 @@
 
 /* Loading animation enhancements */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .loading-shimmer {
-  background: linear-gradient(90deg, 
-    rgba(0,0,0,0.1) 25%, 
-    rgba(0,0,0,0.05) 50%, 
-    rgba(0,0,0,0.1) 75%
-  );
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 25%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.1) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-}
-
-/* Modal backdrop enhancement */
-.modal-backdrop .v-overlay__scrim {
-  backdrop-filter: blur(4px);
 }
 
 /* Enhanced focus states */
