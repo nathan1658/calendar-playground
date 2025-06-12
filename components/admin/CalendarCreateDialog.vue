@@ -85,6 +85,7 @@
           </template>
           <template #item="{ props, item }">
             <VListItem
+              v-if="item?.raw"
               v-bind="props"
               class="user-list-item"
             >
@@ -95,30 +96,33 @@
                   class="mr-3"
                 >
                   <span class="text-caption font-weight-bold">
-                    {{ (item.raw.displayName || item.raw.username).charAt(0).toUpperCase() }}
+                    {{ (item.raw.displayName || item.raw.username || "?").charAt(0).toUpperCase() }}
                   </span>
                 </VAvatar>
               </template>
               <VListItemTitle class="font-weight-medium">
-                {{ item.raw.displayName || item.raw.username }}
+                {{ item.raw.displayName || item.raw.username || "Unknown User" }}
               </VListItemTitle>
               <VListItemSubtitle class="text-caption">
-                {{ item.raw.username }}
+                {{ item.raw.username || "No username" }}
               </VListItemSubtitle>
             </VListItem>
           </template>
           <template #selection="{ item }">
-            <div class="d-flex align-center">
+            <div
+              v-if="item?.raw"
+              class="d-flex align-center"
+            >
               <VAvatar
                 size="20"
                 color="primary"
                 class="mr-2"
               >
                 <span class="user-avatar-text">
-                  {{ (item.raw.displayName || item.raw.username).charAt(0).toUpperCase() }}
+                  {{ (item.raw.displayName || item.raw.username || "?").charAt(0).toUpperCase() }}
                 </span>
               </VAvatar>
-              <span>{{ item.raw.displayName || item.raw.username }}</span>
+              <span>{{ item.raw.displayName || item.raw.username || "Unknown User" }}</span>
             </div>
           </template>
         </VSelect>

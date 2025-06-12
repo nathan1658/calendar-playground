@@ -29,12 +29,15 @@
                   variant="outlined"
                 >
                   <template #item="{ props, item }">
-                    <VListItem v-bind="props">
+                    <VListItem
+                      v-if="item?.raw"
+                      v-bind="props"
+                    >
                       <VListItemTitle>
-                        {{ item.raw.displayName || item.raw.username }}
+                        {{ item.raw.displayName || item.raw.username || "Unknown User" }}
                       </VListItemTitle>
                       <VListItemSubtitle>
-                        {{ item.raw.username }}
+                        {{ item.raw.username || "No username" }}
                       </VListItemSubtitle>
                     </VListItem>
                   </template>

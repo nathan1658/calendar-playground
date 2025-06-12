@@ -1,77 +1,59 @@
 <template>
-  <VContainer fluid class="pa-6">
-    <!-- Top Action Bar -->
-    <VRow class="mb-6">
-      <VCol>
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center">
-            <VIcon
-              icon="mdi-calendar-multiple"
-              size="24"
-              class="mr-3 text-primary"
-            />
-            <h1 class="text-h5 font-weight-bold text-grey-darken-3">
-              {{ isAdmin ? "All Calendars Dashboard" : "My Calendar Dashboard" }}
-            </h1>
-          </div>
-          <div class="d-flex align-center gap-3">
-            <!-- Quick Actions -->
-            <VBtn
-              color="primary"
-              prepend-icon="mdi-plus"
-              @click="openCreateEventModal"
-            >
-              New Event
-            </VBtn>
-          </div>
+  <div class="dashboard">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="dashboard-title">
+            {{ isAdmin ? "All Calendars" : "My Calendar" }}
+          </h1>
+          <p class="dashboard-subtitle">Manage your events and schedule</p>
         </div>
-      </VCol>
-    </VRow>
+        <VBtn
+          color="primary"
+          variant="flat"
+          prepend-icon="mdi-plus"
+          class="create-btn"
+          @click="openCreateEventModal"
+        >
+          New Event
+        </VBtn>
+      </div>
+    </div>
 
+    <!-- Main Content -->
+    <div class="dashboard-content">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <h3 class="section-title">Filters</h3>
+          <FilterPanel
+            v-model="activeFilters"
+            :calendars="availableCalendars"
+            :loading="isLoading"
+            class="filter-panel"
+            @apply="handleFilterChange"
+            @clear="handleFilterClear"
+          />
+        </div>
+      </aside>
 
-    <!-- Main Content Area -->
-    <VRow>
-      <!-- Left Sidebar - Filters -->
-      <VCol cols="12" lg="3">
-        <BaseCard title="Quick Actions" icon="mdi-flash" class="mb-4">
-          <VBtn
-            color="primary"
-            variant="elevated"
-            block
-            prepend-icon="mdi-plus"
-            class="mb-3"
-            @click="openCreateEventModal"
-          >
-            New Event
-          </VBtn>
-        </BaseCard>
-
-        <FilterPanel
-          v-model="activeFilters"
-          :calendars="availableCalendars"
-          :loading="isLoading"
-          @apply="handleFilterChange"
-          @clear="handleFilterClear"
-        />
-      </VCol>
-
-      <!-- Right Side - Main Content -->
-      <VCol cols="12" lg="9">
-        <!-- Calendar Overview Card -->
-        <BaseCard title="Calendar Overview" icon="mdi-calendar" class="mb-4">
+      <!-- Main Calendar Area -->
+      <main class="main-content">
+        <div class="calendar-container">
           <CalendarView
             ref="calendarRef"
             :events="calendarEvents"
-            :height="400"
+            :height="600"
             @event-click="handleEventClick"
             @event-drop="handleEventDrop"
             @event-resize="handleEventResize"
             @date-select="handleDateSelect"
             @view-change="handleViewChange"
           />
-        </BaseCard>
-      </VCol>
-    </VRow>
+        </div>
+      </main>
+    </div>
 
     <!-- Event Modal -->
     <EventModal
@@ -87,48 +69,34 @@
       @delete="handleEventDelete"
     />
 
-    <!-- Loading States -->
-    <template v-if="isLoading">
-      <LoadingSkeleton type="stats" />
-      <VRow>
-        <VCol cols="12" lg="3">
-          <LoadingSkeleton type="actions" />
-        </VCol>
-        <VCol cols="12" lg="9">
-          <LoadingSkeleton type="calendar" />
-          <LoadingSkeleton type="activity" />
-        </VCol>
-      </VRow>
-    </template>
-    
-    <!-- Loading Overlay for operations -->
+    <!-- Loading Overlay -->
     <VOverlay
       v-model="isLoading"
-      class="align-center justify-center"
-      opacity="0.8"
+      class="loading-overlay"
     >
-      <div class="text-center">
+      <div class="loading-content">
         <VProgressCircular
           color="primary"
           indeterminate
-          size="64"
-          width="4"
+          size="32"
+          width="3"
         />
-        <div class="mt-4 text-h6 font-weight-medium">Loading...</div>
-        <div class="text-body-2 text-grey">Please wait while we fetch your data</div>
+        <p class="loading-text">Loading...</p>
       </div>
     </VOverlay>
 
-    <!-- Snackbars -->
+    <!-- Notifications -->
     <VSnackbar
       v-model="errorSnackbar"
       color="error"
       timeout="5000"
+      class="notification-snackbar"
     >
       {{ errorMessage }}
       <template #actions>
         <VBtn
           variant="text"
+          size="small"
           @click="errorSnackbar = false"
         >
           Close
@@ -140,26 +108,26 @@
       v-model="successSnackbar"
       color="success"
       timeout="3000"
+      class="notification-snackbar"
     >
       {{ successMessage }}
       <template #actions>
         <VBtn
           variant="text"
+          size="small"
           @click="successSnackbar = false"
         >
           Close
         </VBtn>
       </template>
     </VSnackbar>
-  </VContainer>
+  </div>
 </template>
 
 <script setup lang="ts">
 import CalendarView from "~/components/CalendarView.vue";
 import EventModal from "~/components/EventModal.vue";
 import FilterPanel from "~/components/FilterPanel.vue";
-import LoadingSkeleton from "~/components/LoadingSkeleton.vue";
-import BaseCard from "~/components/base/BaseCard.vue";
 import type { CalendarEvent } from "~/components/CalendarView.vue";
 import type { EventData, CalendarOption } from "~/components/EventModal.vue";
 import type { FilterOptions } from "~/components/FilterPanel.vue";
@@ -243,22 +211,22 @@ const editableCalendars = computed(() =>
 const animateValue = (ref: Ref<number>, targetValue: number, duration = 2000) => {
   const startValue = ref.value;
   const startTime = Date.now();
-  
+
   const animate = () => {
     const currentTime = Date.now();
     const elapsed = currentTime - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    
+
     // Easing function for smooth animation
     const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-    
+
     ref.value = Math.round(startValue + (targetValue - startValue) * easeOutQuart);
-    
+
     if (progress < 1) {
       requestAnimationFrame(animate);
     }
   };
-  
+
   requestAnimationFrame(animate);
 };
 
@@ -277,8 +245,8 @@ const updateRealTimeCounters = () => {
   const eventDelta = Math.floor(Math.random() * 10) - 5;
   const userDelta = Math.floor(Math.random() * 5) - 2;
   const revenueDelta = Math.floor(Math.random() * 1000) - 500;
-  const conversionDelta = (Math.random() * 0.2) - 0.1;
-  
+  const conversionDelta = Math.random() * 0.2 - 0.1;
+
   animateValue(animatedTotalEvents, 2847 + eventDelta, 1000);
   animateValue(animatedActiveUsers, 1234 + userDelta, 1000);
   animateValue(animatedRevenue, 45678 + revenueDelta, 1000);
@@ -443,30 +411,29 @@ const handleEventDelete = async (eventId: string) => {
   }
 };
 
-// Utility functions  
+// Utility functions
 const showErrorMessage = (message: string) => {
-  showErrorToast('Error', message);
+  showErrorToast("Error", message);
   errorMessage.value = message;
   errorSnackbar.value = true;
 };
 
 const showSuccessMessage = (message: string) => {
-  showSuccessToast('Success', message);
+  showSuccessToast("Success", message);
   successMessage.value = message;
   successSnackbar.value = true;
 };
-
 
 // Lifecycle
 onMounted(async () => {
   await loadCalendars();
   await loadEvents();
-  
+
   // Start counter animations after a short delay
   setTimeout(() => {
     startCounterAnimations();
   }, 300);
-  
+
   // Start real-time updates
   startRealTimeUpdates();
 });
@@ -477,266 +444,196 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.text-disabled {
-  opacity: 0.6;
+/* Reset and Base Styles */
+.dashboard {
+  min-height: 100vh;
+  background-color: #fafafa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Statistics Card Enhancements */
-.stat-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
+/* Header */
+.dashboard-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 24px 0;
+  position: sticky;
   top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s ease;
+  z-index: 10;
 }
 
-.stat-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-  border-color: rgba(var(--v-theme-primary), 0.3);
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.stat-card:hover::before {
-  left: 100%;
+.title-section {
+  flex: 1;
 }
 
-.stat-avatar {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
 }
 
-.stat-card:hover .stat-avatar {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+.dashboard-subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 400;
 }
 
-.progress-bar {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.stat-card:hover .progress-bar {
-  transform: scaleX(1.02);
-}
-
-/* Quick Actions Card */
-.quick-actions-card {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1), rgba(var(--v-theme-primary), 0.05));
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
-  border-radius: 16px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.quick-actions-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.15);
-}
-
-/* Performance Card */
-.performance-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.performance-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-}
-
-/* Activity Card */
-.activity-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* List Item Enhancements */
-:deep(.v-list-item) {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 12px;
-  margin: 4px 8px;
-}
-
-:deep(.v-list-item:hover) {
-  background-color: rgba(var(--v-theme-primary), 0.04);
-  transform: translateX(8px);
-}
-
-:deep(.v-list-item .v-avatar) {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:deep(.v-list-item:hover .v-avatar) {
-  transform: scale(1.1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* Chip Enhancements */
-:deep(.v-chip) {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:deep(.v-chip:hover) {
-  transform: scale(1.05);
-}
-
-/* Button Group Time Period */
-.time-period-btn {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.create-btn {
   border-radius: 8px;
-  position: relative;
+  text-transform: none;
+  font-weight: 500;
+  padding: 0 20px;
+  height: 40px;
+}
+
+/* Main Content Layout */
+.dashboard-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Sidebar */
+.sidebar {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  position: sticky;
+  top: 120px;
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 16px 0;
+}
+
+.filter-panel {
+  /* Remove any custom styling to let the component handle its own appearance */
+}
+
+/* Main Content */
+.main-content {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
   overflow: hidden;
 }
 
-.time-period-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, rgba(var(--v-theme-primary), 0.1), rgba(var(--v-theme-primary), 0.05));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.time-period-btn:hover::before {
-  opacity: 1;
-}
-
-/* Floating Action Elements */
-.floating-element {
-  position: relative;
-  z-index: 1;
-}
-
-.floating-element::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.floating-element:hover::after {
-  opacity: 1;
-}
-
-/* Cursor Enhancement */
-.cursor-pointer {
-  cursor: pointer;
-}
-
-/* Responsive Animations */
-@media (prefers-reduced-motion: reduce) {
-  .stat-card,
-  .stat-avatar,
-  .progress-bar,
-  .quick-actions-card,
-  .performance-card {
-    transition: none !important;
-    animation: none !important;
-  }
+.calendar-container {
+  padding: 24px;
 }
 
 /* Loading States */
-.skeleton-loader {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  border-radius: 8px;
+.loading-overlay {
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
-@keyframes loading {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+.loading-content {
+  text-align: center;
+  color: #374151;
 }
 
-/* Pulse Effect for Real-time Data */
-.real-time-indicator {
-  position: relative;
+.loading-text {
+  margin: 12px 0 0 0;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.real-time-indicator::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
-  background: #4caf50;
-  border-radius: 50%;
-  animation: pulse-dot 2s infinite;
+/* Notifications */
+.notification-snackbar {
+  font-weight: 500;
 }
 
-@keyframes pulse-dot {
-  0% {
-    transform: scale(1);
-    opacity: 1;
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
-  50% {
-    transform: scale(1.5);
-    opacity: 0.7;
+
+  .sidebar {
+    position: static;
+    order: 2;
   }
-  100% {
-    transform: scale(1);
-    opacity: 1;
+
+  .main-content {
+    order: 1;
   }
 }
 
-/* Glass morphism for cards */
-.glass-card {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .dashboard-content {
+    padding: 24px 16px;
+    gap: 16px;
+  }
+
+  .sidebar {
+    padding: 16px;
+  }
+
+  .calendar-container {
+    padding: 16px;
+  }
+
+  .dashboard-title {
+    font-size: 24px;
+  }
 }
 
-/* Stagger animation enhancement */
-.stagger-item {
-  opacity: 0;
-  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* Remove all complex animations and effects */
+* {
+  transition: none !important;
+  animation: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
 }
 
-.stagger-item:nth-child(1) { animation-delay: 0.1s; }
-.stagger-item:nth-child(2) { animation-delay: 0.2s; }
-.stagger-item:nth-child(3) { animation-delay: 0.3s; }
-.stagger-item:nth-child(4) { animation-delay: 0.4s; }
+/* Simple hover states only */
+.create-btn:hover {
+  opacity: 0.9;
+}
 
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.sidebar:hover,
+.main-content:hover {
+  border-color: #d1d5db;
+}
+
+/* Focus states for accessibility */
+.create-btn:focus {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
 }
 </style>

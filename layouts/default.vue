@@ -28,9 +28,9 @@
       <!-- Center - Navigation Tabs -->
       <div class="d-flex align-center">
         <VTabs
+          height="48"
           :model-value="activeTab"
           color="primary"
-          class="mx-8"
         >
           <VTab
             value="overview"
@@ -39,35 +39,23 @@
           >
             Overview
           </VTab>
-          <VTab
-            value="analytics"
-            :active="$route.path === '/analytics'"
-            @click="navigateTo('/analytics')"
-          >
-            Analytics
-          </VTab>
-          <VTab
-            value="calendar"
-            :active="$route.path === '/calendar'"
-            @click="navigateTo('/calendar')"
-          >
-            Calendar
-          </VTab>
-          <VTab
-            value="settings"
-            :active="$route.path === '/settings'"
-            @click="navigateTo('/settings')"
-          >
-            Settings
-          </VTab>
-          <VTab
-            v-if="isAdmin"
-            value="admin"
-            :active="$route.path.startsWith('/admin')"
-            @click="navigateTo('/admin')"
-          >
-            Admin
-          </VTab>
+          <div class="mx-3">
+            <VTab
+              value="calendar"
+              :active="$route.path === '/calendar'"
+              @click="navigateTo('/calendar')"
+            >
+              Calendar
+            </VTab>
+            <VTab
+              v-if="isAdmin"
+              value="admin"
+              :active="$route.path.startsWith('/admin')"
+              @click="navigateTo('/admin')"
+            >
+              Admin
+            </VTab>
+          </div>
         </VTabs>
       </div>
 
@@ -149,7 +137,8 @@
           v-else
           variant="outlined"
           color="primary"
-          @click="navigateTo('/login')"
+          size="small"
+          @click="openLoginDialog"
         >
           <template #prepend>
             <VIcon
@@ -165,12 +154,30 @@
     <VMain>
       <slot />
     </VMain>
+
+    <LoginDialog v-model="loginDialog" @success="handleLoginSuccess" />
   </VApp>
 </template>
 
 <script setup lang="ts">
 const { data, signOut } = useAuth();
 const route = useRoute();
+const loginDialog = ref(false);
+const { addToast } = useToast();
+
+const openLoginDialog = () => {
+  loginDialog.value = true;
+};
+
+const handleLoginSuccess = (message?: string) => {
+  if (message) {
+    addToast({
+      message,
+      type: 'success',
+      duration: 4000
+    });
+  }
+};
 
 // Make user data properly reactive
 const currentUser = computed(() => {
@@ -199,9 +206,7 @@ const isAdmin = computed(() => currentUser.value?.roles?.includes("admin") || fa
 const activeTab = computed(() => {
   const path = route.path;
   if (path === "/") return "overview";
-  if (path === "/analytics") return "analytics";
   if (path === "/calendar") return "calendar";
-  if (path === "/settings") return "settings";
   if (path.startsWith("/admin")) return "admin";
   return "overview";
 });
@@ -214,8 +219,11 @@ const handleCreateEvent = () => {
 
 const handleLogout = async () => {
   try {
-    await signOut();
-    await navigateTo("/login");
+    await signOut({
+      callbackUrl: "/",
+      redirect: true,
+      external: false,
+    });
   } catch (error) {
     console.error("Logout error:", error);
   }

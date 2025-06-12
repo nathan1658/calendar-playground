@@ -3,56 +3,54 @@
     <VContainer fluid>
       <VRow>
         <!-- Calendar Selection Sidebar -->
-        <VCol
-          cols="12"
-          md="3"
-          lg="2"
-        >
-          <VCard>
-            <VCardTitle>
-              <VRow align="center">
-                <VCol>
-                  <VIcon
-                    icon="mdi-calendar-multiple"
-                    class="mr-2"
-                  />
-                  Calendars
-                </VCol>
-                <VCol cols="auto">
-                  <VBtn
-                    v-if="!allCalendarsSelected"
-                    variant="text"
-                    size="small"
-                    color="primary"
-                    @click="selectAllCalendars"
-                  >
-                    Select All
-                  </VBtn>
-                  <VBtn
-                    v-else
-                    variant="text"
-                    size="small"
-                    color="primary"
-                    @click="deselectAllCalendars"
-                  >
-                    Deselect All
-                  </VBtn>
-                </VCol>
-              </VRow>
-            </VCardTitle>
+        <VCol cols="auto">
+          <VCard width="300">
+            <VCardItem>
+              <VCardTitle>
+                <VRow align="center">
+                  <VCol>
+                    <div class="d-flex align-center ga-2">
+                      <VIcon icon="mdi-calendar-multiple" />
+                      <div class="text-subtitle-1">Calendars</div>
+                      <VSpacer />
+                      <VBtn
+                        v-if="!allCalendarsSelected"
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        @click="selectAllCalendars"
+                      >
+                        Select All
+                      </VBtn>
+                      <VBtn
+                        v-else
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        @click="deselectAllCalendars"
+                      >
+                        Deselect All
+                      </VBtn>
+                    </div>
+                  </VCol>
+                </VRow>
+              </VCardTitle>
+            </VCardItem>
 
             <VCardText>
               <VList density="compact">
                 <VListItem
                   v-for="calendar in availableCalendars"
                   :key="calendar.id"
-                  class="px-0"
+                  class="pl-0"
                 >
                   <template #prepend>
                     <VCheckbox
+                      hide-details
+                      class="pr-2"
                       :model-value="selectedCalendarIds.includes(calendar.id)"
                       :color="getCalendarColor(calendar.category)"
-                      @update:model-value="(value: boolean | null) => value !== null && toggleCalendar(calendar.id, value)"
+                      @update:model-value="toggleCalendar(calendar.id, $event)"
                     />
                   </template>
                   <VListItemTitle class="text-body-2">
@@ -100,8 +98,8 @@
         <!-- Main Calendar View -->
         <VCol
           cols="12"
-          md="9"
-          lg="10"
+          md="8"
+          lg="9"
         >
           <VCard>
             <VCardTitle>

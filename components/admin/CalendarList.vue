@@ -8,7 +8,7 @@
           size="40"
           class="mr-3"
         >
-          <VIcon 
+          <VIcon
             icon="mdi-calendar-multiple-check"
             color="white"
             size="20"
@@ -24,7 +24,10 @@
         @click="showCreateDialog = true"
       >
         <template #prepend>
-          <VIcon icon="mdi-plus" size="18" />
+          <VIcon
+            icon="mdi-plus"
+            size="18"
+          />
         </template>
         Create Calendar
       </VBtn>
@@ -43,13 +46,15 @@
         <template #item.name="{ item }">
           <div class="py-2">
             <div class="font-weight-medium text-grey-darken-4">{{ item.name }}</div>
-            <div v-if="item.category" class="text-caption text-grey">{{ item.category }}</div>
           </div>
         </template>
 
         <template #item.owner="{ item }">
-          <div v-if="item.owner" class="d-flex align-center">
-            <VAvatar 
+          <div
+            v-if="item.owner"
+            class="d-flex align-center"
+          >
+            <VAvatar
               size="24"
               color="primary"
               class="mr-2"
@@ -60,7 +65,12 @@
             </VAvatar>
             <span class="text-body-2">{{ item.owner.displayName || item.owner.username }}</span>
           </div>
-          <span v-else class="text-body-2 text-grey font-italic">No owner</span>
+          <span
+            v-else
+            class="text-body-2 text-grey font-italic"
+          >
+            No owner
+          </span>
         </template>
 
         <template #item.isPublic="{ item }">
@@ -70,7 +80,11 @@
             size="small"
             variant="tonal"
           >
-            <VIcon icon="mdi-earth" size="12" class="mr-1" />
+            <VIcon
+              icon="mdi-earth"
+              size="12"
+              class="mr-1"
+            />
             Public
           </VChip>
           <VChip
@@ -79,14 +93,23 @@
             size="small"
             variant="outlined"
           >
-            <VIcon icon="mdi-lock" size="12" class="mr-1" />
+            <VIcon
+              icon="mdi-lock"
+              size="12"
+              class="mr-1"
+            />
             Private
           </VChip>
         </template>
 
         <template #item.permissions="{ item }">
           <div class="d-flex align-center">
-            <VIcon icon="mdi-account-multiple" size="14" color="grey" class="mr-2" />
+            <VIcon
+              icon="mdi-account-multiple"
+              size="14"
+              color="grey"
+              class="mr-2"
+            />
             <span class="text-body-2">{{ item.permissions.length }} users</span>
           </div>
         </template>
@@ -100,39 +123,31 @@
             <VBtn
               icon="mdi-eye"
               size="small"
-              variant="text"
               color="primary"
+              variant="text"
               @click="viewCalendar(item)"
-            >
-              <VTooltip activator="parent" location="top">View Calendar</VTooltip>
-            </VBtn>
+            />
             <VBtn
               icon="mdi-pencil"
               size="small"
               variant="text"
               color="primary"
               @click="editCalendar(item)"
-            >
-              <VTooltip activator="parent" location="top">Edit Calendar</VTooltip>
-            </VBtn>
+            />
             <VBtn
               icon="mdi-account-multiple"
               size="small"
               variant="text"
               color="warning"
               @click="managePermissions(item)"
-            >
-              <VTooltip activator="parent" location="top">Manage Permissions</VTooltip>
-            </VBtn>
+            />
             <VBtn
               icon="mdi-delete"
               size="small"
               variant="text"
               color="error"
               @click="deleteCalendar(item)"
-            >
-              <VTooltip activator="parent" location="top">Delete Calendar</VTooltip>
-            </VBtn>
+            />
           </div>
         </template>
       </VDataTable>
@@ -172,7 +187,7 @@
             size="40"
             class="mr-3"
           >
-            <VIcon 
+            <VIcon
               icon="mdi-alert-circle"
               color="white"
               size="20"
@@ -195,33 +210,44 @@
               <VIcon icon="mdi-information" />
             </template>
             <div>
-              <div class="font-weight-medium">
-                You are about to permanently delete the calendar:
-              </div>
-              <div class="font-weight-bold mt-1">
-                "{{ selectedCalendar?.name }}"
-              </div>
+              <div class="font-weight-medium">You are about to permanently delete the calendar:</div>
+              <div class="font-weight-bold mt-1">"{{ selectedCalendar?.name }}"</div>
             </div>
           </VAlert>
-          
+
           <div class="text-body-2 text-grey-darken-1">
             <p class="mb-2 font-weight-medium">This will also delete:</p>
-            <VList density="compact" class="bg-transparent">
+            <VList
+              density="compact"
+              class="bg-transparent"
+            >
               <VListItem>
                 <template #prepend>
-                  <VIcon icon="mdi-circle-small" size="16" color="grey" />
+                  <VIcon
+                    icon="mdi-circle-small"
+                    size="16"
+                    color="grey"
+                  />
                 </template>
                 <VListItemTitle class="text-body-2">All events in this calendar</VListItemTitle>
               </VListItem>
               <VListItem>
                 <template #prepend>
-                  <VIcon icon="mdi-circle-small" size="16" color="grey" />
+                  <VIcon
+                    icon="mdi-circle-small"
+                    size="16"
+                    color="grey"
+                  />
                 </template>
                 <VListItemTitle class="text-body-2">All permission settings</VListItemTitle>
               </VListItem>
               <VListItem>
                 <template #prepend>
-                  <VIcon icon="mdi-circle-small" size="16" color="grey" />
+                  <VIcon
+                    icon="mdi-circle-small"
+                    size="16"
+                    color="grey"
+                  />
                 </template>
                 <VListItemTitle class="text-body-2">Calendar history and metadata</VListItemTitle>
               </VListItem>
@@ -245,7 +271,10 @@
             @click="confirmDelete"
           >
             <template #prepend>
-              <VIcon icon="mdi-delete" size="18" />
+              <VIcon
+                icon="mdi-delete"
+                size="18"
+              />
             </template>
             Delete Calendar
           </VBtn>
@@ -365,4 +394,3 @@ onMounted(() => {
   fetchCalendars();
 });
 </script>
-

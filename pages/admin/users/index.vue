@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AdminCalendarList />
+    <AdminUserList />
   </div>
 </template>
 
@@ -12,7 +12,7 @@ definePageMeta({
 
 // Set page head
 useHead({
-  title: "Calendar Management - Admin",
+  title: "User Management - Admin",
 });
 </script>
 

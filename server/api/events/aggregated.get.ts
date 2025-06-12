@@ -86,11 +86,11 @@ export default defineEventHandler(async event => {
       startTime: evt.startTime,
       endTime: evt.endTime,
       allDay: evt.allDay,
-      createdBy: {
+      createdBy: evt.createdBy ? {
         id: evt.createdBy._id.toString(),
         username: evt.createdBy.username,
         displayName: evt.createdBy.displayName,
-      },
+      } : null,
       createdAt: evt.createdAt,
       updatedAt: evt.updatedAt,
     }));

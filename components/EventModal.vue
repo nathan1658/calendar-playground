@@ -30,7 +30,7 @@
           class="enhanced-field"
         >
           <template #prepend-inner>
-            <VIcon 
+            <VIcon
               icon="mdi-format-title"
               size="18"
               color="primary"
@@ -53,7 +53,7 @@
           class="enhanced-field"
         >
           <template #prepend-inner>
-            <VIcon 
+            <VIcon
               icon="mdi-text"
               size="18"
               color="primary"
@@ -79,28 +79,37 @@
           class="enhanced-field"
         >
           <template #prepend-inner>
-            <VIcon 
+            <VIcon
               icon="mdi-calendar"
               size="18"
               color="primary"
             />
           </template>
           <template #item="{ props, item }">
-            <VListItem v-bind="props" class="calendar-list-item">
+            <VListItem
+              v-bind="props"
+              class="calendar-list-item"
+            >
               <template #prepend>
-                <VAvatar 
+                <VAvatar
                   size="32"
                   color="primary"
                   variant="tonal"
                   class="mr-3"
                 >
-                  <VIcon icon="mdi-calendar" size="16" />
+                  <VIcon
+                    icon="mdi-calendar"
+                    size="16"
+                  />
                 </VAvatar>
               </template>
               <VListItemTitle class="font-weight-medium">
                 {{ item.raw.name }}
               </VListItemTitle>
-              <VListItemSubtitle v-if="item.raw.category" class="text-caption">
+              <VListItemSubtitle
+                v-if="item.raw.category"
+                class="text-caption"
+              >
                 {{ item.raw.category }}
               </VListItemSubtitle>
             </VListItem>
@@ -120,17 +129,15 @@
               class="all-day-checkbox"
             />
             <div class="flex-grow-1 ml-2">
-              <div 
-                class="all-day-title" 
+              <div
+                class="all-day-title"
                 @click="formData.allDay = !formData.allDay"
               >
                 All Day Event
               </div>
-              <p class="all-day-description">
-                This event lasts the entire day without specific start and end times
-              </p>
+              <p class="all-day-description">This event lasts the entire day without specific start and end times</p>
             </div>
-            <VIcon 
+            <VIcon
               :icon="formData.allDay ? 'mdi-weather-sunny' : 'mdi-clock-outline'"
               size="20"
               :color="formData.allDay ? 'warning' : 'grey'"
@@ -157,7 +164,7 @@
               class="enhanced-field"
             >
               <template #prepend-inner>
-                <VIcon 
+                <VIcon
                   icon="mdi-calendar-start"
                   size="18"
                   color="success"
@@ -167,7 +174,10 @@
           </div>
 
           <!-- Start Time -->
-          <div v-if="!formData.allDay" class="datetime-field">
+          <div
+            v-if="!formData.allDay"
+            class="datetime-field"
+          >
             <VTextField
               v-model="formData.startTime"
               label="Start Time"
@@ -180,7 +190,7 @@
               class="enhanced-field"
             >
               <template #prepend-inner>
-                <VIcon 
+                <VIcon
                   icon="mdi-clock-start"
                   size="18"
                   color="success"
@@ -203,7 +213,7 @@
               class="enhanced-field"
             >
               <template #prepend-inner>
-                <VIcon 
+                <VIcon
                   icon="mdi-calendar-end"
                   size="18"
                   color="error"
@@ -213,7 +223,10 @@
           </div>
 
           <!-- End Time -->
-          <div v-if="!formData.allDay" class="datetime-field">
+          <div
+            v-if="!formData.allDay"
+            class="datetime-field"
+          >
             <VTextField
               v-model="formData.endTime"
               label="End Time"
@@ -226,7 +239,7 @@
               class="enhanced-field"
             >
               <template #prepend-inner>
-                <VIcon 
+                <VIcon
                   icon="mdi-clock-end"
                   size="18"
                   color="error"
@@ -238,8 +251,11 @@
       </div>
 
       <!-- Duration Display -->
-      <div v-if="eventDuration" class="duration-display">
-        <VIcon 
+      <div
+        v-if="eventDuration"
+        class="duration-display"
+      >
+        <VIcon
           icon="mdi-timer-outline"
           size="16"
           color="info"
@@ -252,7 +268,7 @@
 </template>
 
 <script setup lang="ts">
-import BaseDialog from '~/components/base/BaseDialog.vue';
+import BaseDialog from "~/components/base/BaseDialog.vue";
 
 export interface EventFormData {
   subject: string;
@@ -314,7 +330,6 @@ const formRef = ref();
 const isFormValid = ref(false);
 const isSubmitting = ref(false);
 const isDeleting = ref(false);
-
 
 const isEditMode = computed(() => props.mode === "edit" || !!props.event?.id);
 
@@ -463,9 +478,9 @@ const handleCancel = () => {
 const dialogActions = computed(() => {
   const actions = [
     {
-      text: 'Cancel',
-      variant: 'text' as const,
-      color: 'grey',
+      text: "Cancel",
+      variant: "text" as const,
+      color: "grey",
       disabled: isSubmitting.value || isDeleting.value,
       onClick: handleCancel,
     },
@@ -473,9 +488,9 @@ const dialogActions = computed(() => {
 
   if (isEditMode.value) {
     actions.push({
-      text: 'Delete',
-      variant: 'text' as const,
-      color: 'error',
+      text: "Delete",
+      variant: "text" as const,
+      color: "error",
       loading: isDeleting.value,
       disabled: isSubmitting.value,
       onClick: handleDelete,
@@ -483,9 +498,9 @@ const dialogActions = computed(() => {
   }
 
   actions.push({
-    text: isEditMode.value ? 'Update Event' : 'Create Event',
-    variant: 'elevated' as const,
-    color: 'primary',
+    text: isEditMode.value ? "Update Event" : "Create Event",
+    variant: "elevated" as const,
+    color: "primary",
     loading: isSubmitting.value,
     disabled: !isFormValid.value || isDeleting.value,
     onClick: handleSubmit,
@@ -497,55 +512,55 @@ const dialogActions = computed(() => {
 // Event duration calculation
 const eventDuration = computed(() => {
   if (!formData.startDate || !formData.endDate) return null;
-  
+
   let start: Date;
   let end: Date;
-  
+
   if (formData.allDay) {
-    start = new Date(formData.startDate + 'T00:00:00');
-    end = new Date(formData.endDate + 'T23:59:59');
+    start = new Date(formData.startDate + "T00:00:00");
+    end = new Date(formData.endDate + "T23:59:59");
   } else {
     if (!formData.startTime || !formData.endTime) return null;
-    start = new Date(formData.startDate + 'T' + formData.startTime);
-    end = new Date(formData.endDate + 'T' + formData.endTime);
+    start = new Date(formData.startDate + "T" + formData.startTime);
+    end = new Date(formData.endDate + "T" + formData.endTime);
   }
-  
+
   const diffMs = end.getTime() - start.getTime();
   if (diffMs <= 0) return null;
-  
+
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
   const diffDays = Math.floor(diffHours / 24);
-  
+
   if (formData.allDay) {
     const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    return days === 1 ? '1 day' : `${days} days`;
+    return days === 1 ? "1 day" : `${days} days`;
   }
-  
+
   if (diffDays > 0) {
     const remainingHours = diffHours % 24;
-    let result = diffDays === 1 ? '1 day' : `${diffDays} days`;
+    let result = diffDays === 1 ? "1 day" : `${diffDays} days`;
     if (remainingHours > 0) {
-      result += remainingHours === 1 ? ' 1 hour' : ` ${remainingHours} hours`;
+      result += remainingHours === 1 ? " 1 hour" : ` ${remainingHours} hours`;
     }
     return result;
   }
-  
+
   if (diffHours > 0) {
-    let result = diffHours === 1 ? '1 hour' : `${diffHours} hours`;
+    let result = diffHours === 1 ? "1 hour" : `${diffHours} hours`;
     if (diffMinutes > 0) {
-      result += diffMinutes === 1 ? ' 1 minute' : ` ${diffMinutes} minutes`;
+      result += diffMinutes === 1 ? " 1 minute" : ` ${diffMinutes} minutes`;
     }
     return result;
   }
-  
-  return diffMinutes === 1 ? '1 minute' : `${diffMinutes} minutes`;
+
+  return diffMinutes === 1 ? "1 minute" : `${diffMinutes} minutes`;
 });
 
 // Watch for modal opening to initialize form
 watch(
   isOpen,
-  (newValue) => {
+  newValue => {
     if (newValue) {
       initializeForm();
     }
@@ -563,15 +578,25 @@ watch(
 
 .form-section {
   margin-bottom: 24px;
-  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation-fill-mode: backwards;
 }
 
-.form-section:nth-child(1) { animation-delay: 0.1s; }
-.form-section:nth-child(2) { animation-delay: 0.2s; }
-.form-section:nth-child(3) { animation-delay: 0.3s; }
-.form-section:nth-child(4) { animation-delay: 0.4s; }
-.form-section:nth-child(5) { animation-delay: 0.5s; }
+.form-section:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.form-section:nth-child(2) {
+  animation-delay: 0.11s;
+}
+.form-section:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.form-section:nth-child(4) {
+  animation-delay: 0.13s;
+}
+.form-section:nth-child(5) {
+  animation-delay: 0.14s;
+}
 
 @keyframes slideInUp {
   from {
@@ -703,16 +728,16 @@ watch(
   .form-section {
     margin-bottom: 20px;
   }
-  
+
   .datetime-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .all-day-card {
     padding: 16px;
   }
-  
+
   .duration-display {
     padding: 10px 14px;
   }
@@ -734,7 +759,7 @@ watch(
 /* Date and time field specific styling */
 :deep(.v-field input[type="date"]),
 :deep(.v-field input[type="time"]) {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: 500;
 }
 

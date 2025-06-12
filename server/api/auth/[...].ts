@@ -2,11 +2,11 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { NuxtAuthHandler } from "#auth";
 import { User } from "~/server/models/User.model";
 import type { User as NextAuthUser } from "next-auth";
-import { loginSchema, type LoginInput } from "~/types/validation";
+import { loginSchema } from "~/types/validation";
 
 export default NuxtAuthHandler({
   pages: {
-    signIn: "/login",
+    signIn: "/",
   },
   secret: useRuntimeConfig().authSecret ?? "some-secret-key",
 
