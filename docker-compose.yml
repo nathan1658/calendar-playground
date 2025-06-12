@@ -11,7 +11,7 @@ services:
       - NODE_ENV=production
       - NITRO_PORT=3000
       - NITRO_HOST=0.0.0.0
-      - NUXT_MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/histotripsy-form?authSource=admin
+      - NUXT_MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/calendar?authSource=admin
       - INITIAL_ADMIN_NAME=admin
       - INITIAL_ADMIN_PASSWORD=password123
       - AUTH_ORIGIN=https://calendar.nathan1658.synology.me/
@@ -36,13 +36,13 @@ services:
 
   mongodb:
     image: mongo:7.0
-    container_name: histotripsy-mongodb
+    container_name: calendar-mongodb
     expose:
       - "27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME:-admin}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-password123}
-      - MONGO_INITDB_DATABASE=${MONGO_DATABASE:-histotripsy}
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE:-calendar}
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
