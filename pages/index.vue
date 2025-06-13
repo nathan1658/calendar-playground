@@ -1,6 +1,102 @@
 <template>
   <div class="calendar-page">
     <VContainer fluid>
+      <!-- Top Toolbar -->
+      <VCard
+        v-if="isAdmin"
+        class="mb-4"
+      >
+        <VCardText>
+          <VRow
+            align="center"
+            dense
+          >
+            <!-- Calendar Selection -->
+            <VCol
+              cols="12"
+              sm="6"
+              md="4"
+            >
+              <VSelect
+                v-model="selectedCalendarIds"
+                :items="availableCalendars"
+                item-title="name"
+                item-value="id"
+                label="Select Calendars"
+                multiple
+                chips
+                closable-chips
+                density="compact"
+                variant="outlined"
+              >
+                <template #prepend-item>
+                  <VListItem @click="toggleAllCalendars">
+                    <template #prepend>
+                      <VCheckbox
+                        :model-value="allCalendarsSelected"
+                        :indeterminate="someCalendarsSelected && !allCalendarsSelected"
+                        color="primary"
+                      />
+                    </template>
+                    <VListItemTitle>
+                      {{ allCalendarsSelected ? "Deselect All" : "Select All" }}
+                    </VListItemTitle>
+                  </VListItem>
+                  <VDivider />
+                </template>
+              </VSelect>
+            </VCol>
+
+            <!-- Column Count -->
+            <VCol
+              cols="6"
+              sm="3"
+              md="2"
+            >
+              <VSelect
+                v-model="columnCount"
+                :items="columnOptions"
+                label="Columns"
+                density="compact"
+                variant="outlined"
+              />
+            </VCol>
+
+            <!-- Padding -->
+            <VCol
+              cols="6"
+              sm="3"
+              md="2"
+            >
+              <VTextField
+                v-model.number="paddingPx"
+                label="Padding (px)"
+                type="number"
+                min="0"
+                max="50"
+                density="compact"
+                variant="outlined"
+              />
+            </VCol>
+
+            <!-- New Event Button -->
+            <VCol
+              v-if="isAdmin"
+              cols="auto"
+              class="ml-auto"
+            >
+              <VBtn
+                color="primary"
+                @click="openCreateModal"
+              >
+                <VIcon left>mdi-plus</VIcon>
+                New Event
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+
       <!-- Calendar Grid -->
       <div
         v-if="selectedCalendarIds.length > 0"
@@ -42,7 +138,11 @@
               @event-click="handleEventClick"
               @event-drop="isLoggedIn ? handleEventDrop : () => {}"
               @event-resize="isLoggedIn ? handleEventResize : () => {}"
-              @date-select="isLoggedIn ? (start: Date, end: Date, allDay: boolean) => handleDateSelect(start, end, allDay, calendar.id) : () => {}"
+              @date-select="
+                isLoggedIn
+                  ? (start: Date, end: Date, allDay: boolean) => handleDateSelect(start, end, allDay, calendar.id)
+                  : () => {}
+              "
             />
           </VCardText>
         </VCard>
@@ -150,11 +250,28 @@ const snackbarStore = useSnackbarStore();
 const columnCount = ref(2);
 const paddingPx = ref(16);
 
+// Column options
+const columnOptions = [
+  { title: "1 Column", value: 1 },
+  { title: "2 Columns", value: 2 },
+  { title: "3 Columns", value: 3 },
+  { title: "4 Columns", value: 4 },
+];
+
 // Default values for new events
 const defaultCalendarId = ref("");
 const defaultStartTime = ref(new Date());
 const defaultEndTime = ref(new Date(Date.now() + 60 * 60 * 1000));
 const defaultAllDay = ref(false);
+
+// Computed properties
+const allCalendarsSelected = computed(() => {
+  return selectedCalendarIds.value.length === availableCalendars.value.length && availableCalendars.value.length > 0;
+});
+
+const someCalendarsSelected = computed(() => {
+  return selectedCalendarIds.value.length > 0;
+});
 
 const selectedCalendars = computed(() => {
   return availableCalendars.value.filter(cal => selectedCalendarIds.value.includes(cal.id));
@@ -264,12 +381,11 @@ const checkViewParameter = async () => {
   }
 };
 
-
 // Load events from API
 const loadEvents = async () => {
   try {
     isLoading.value = true;
-    
+
     if (isLoggedIn.value) {
       const events = await getAggregatedEvents();
       calendarEvents.value = events.map(formatEventForCalendar);
@@ -298,13 +414,15 @@ const loadEvents = async () => {
         }>;
         total: number;
       }>("/api/public/events");
-      
+
       calendarEvents.value = response.events
         .filter(event => event.createdBy !== null) // Filter out events with null createdBy
-        .map(event => formatEventForCalendar({
-          ...event,
-          createdBy: event.createdBy! // We've filtered out nulls above
-        }));
+        .map(event =>
+          formatEventForCalendar({
+            ...event,
+            createdBy: event.createdBy!, // We've filtered out nulls above
+          }),
+        );
     }
   } catch (error) {
     console.error("Failed to load events:", error);
@@ -353,6 +471,15 @@ const loadCalendars = async () => {
   }
 };
 
+// Calendar selection methods
+const toggleAllCalendars = () => {
+  if (allCalendarsSelected.value) {
+    selectedCalendarIds.value = [];
+  } else {
+    selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
+  }
+};
+
 // Event handlers
 const openCreateModal = () => {
   selectedEvent.value = null;
@@ -377,7 +504,7 @@ const handleEventClick = (event: CalendarEvent) => {
 
 const handleDateSelect = (start: Date, end: Date, allDay: boolean, calendarId?: string) => {
   if (!isLoggedIn.value) return;
-  
+
   defaultStartTime.value = start;
   defaultEndTime.value = end;
   defaultAllDay.value = allDay;
@@ -389,7 +516,7 @@ const handleDateSelect = (start: Date, end: Date, allDay: boolean, calendarId?: 
 
 const handleEventDrop = async (eventId: string, newStart: Date, newEnd: Date) => {
   if (!isLoggedIn.value) return;
-  
+
   try {
     await updateEventDates(eventId, newStart, newEnd);
     snackbarStore.success("Success", "Event updated successfully");
@@ -408,7 +535,7 @@ const handleEventResize = async (eventId: string, newStart: Date, newEnd: Date) 
 
 const handleEventSubmit = async (eventData: EventData) => {
   if (!isLoggedIn.value || modalMode.value === "read") return;
-  
+
   try {
     isLoading.value = true;
 
@@ -431,7 +558,7 @@ const handleEventSubmit = async (eventData: EventData) => {
 
 const handleEventDelete = async (eventId: string) => {
   if (!isLoggedIn.value || modalMode.value === "read") return;
-  
+
   try {
     isLoading.value = true;
     await deleteEvent(eventId);
