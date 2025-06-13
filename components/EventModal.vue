@@ -269,6 +269,7 @@
 
 <script setup lang="ts">
 import BaseDialog from "~/components/base/BaseDialog.vue";
+import type { EventModalMode } from "~/types";
 
 export interface EventFormData {
   subject: string;
@@ -300,7 +301,7 @@ export interface EventData {
 interface Props {
   event?: EventData | null;
   calendars: CalendarOption[];
-  mode?: "create" | "edit";
+  mode?: EventModalMode;
   defaultCalendarId?: string;
   defaultStartTime?: Date;
   defaultEndTime?: Date;

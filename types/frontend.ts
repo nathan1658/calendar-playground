@@ -10,7 +10,7 @@ export interface BaseModalProps {
 }
 
 /**
- * Base emits interface for modal components  
+ * Base emits interface for modal components
  */
 export interface BaseModalEmits {
   (e: "update:modelValue", value: boolean): void;
@@ -404,3 +404,5 @@ export type StringKeys<T> = {
 export type FunctionKeys<T> = {
   [K in keyof T]: T[K] extends Function ? K : never;
 }[keyof T];
+
+export type EventModalMode = "create" | "edit" | "read";

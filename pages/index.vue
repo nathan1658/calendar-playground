@@ -1,99 +1,6 @@
 <template>
   <div class="calendar-page">
     <VContainer fluid>
-      <!-- Top Toolbar -->
-      <VCard class="mb-4">
-        <VCardText>
-          <VRow
-            align="center"
-            dense
-          >
-            <!-- Calendar Selection -->
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <VSelect
-                v-model="selectedCalendarIds"
-                :items="availableCalendars"
-                item-title="name"
-                item-value="id"
-                label="Select Calendars"
-                multiple
-                chips
-                closable-chips
-                density="compact"
-                variant="outlined"
-              >
-                <template #prepend-item>
-                  <VListItem @click="toggleAllCalendars">
-                    <template #prepend>
-                      <VCheckbox
-                        :model-value="allCalendarsSelected"
-                        :indeterminate="someCalendarsSelected && !allCalendarsSelected"
-                        color="primary"
-                      />
-                    </template>
-                    <VListItemTitle>
-                      {{ allCalendarsSelected ? "Deselect All" : "Select All" }}
-                    </VListItemTitle>
-                  </VListItem>
-                  <VDivider />
-                </template>
-              </VSelect>
-            </VCol>
-
-            <!-- Column Count -->
-            <VCol
-              cols="6"
-              sm="3"
-              md="2"
-            >
-              <VSelect
-                v-model="columnCount"
-                :items="columnOptions"
-                label="Columns"
-                density="compact"
-                variant="outlined"
-              />
-            </VCol>
-
-            <!-- Padding -->
-            <VCol
-              cols="6"
-              sm="3"
-              md="2"
-            >
-              <VTextField
-                v-model.number="paddingPx"
-                label="Padding (px)"
-                type="number"
-                min="0"
-                max="50"
-                density="compact"
-                variant="outlined"
-              />
-            </VCol>
-
-            <!-- New Event Button -->
-            <VCol
-              v-if="isAdmin"
-              cols="auto"
-              class="ml-auto"
-            >
-              <VBtn
-                color="primary"
-                @click="openCreateModal"
-              >
-                <VIcon left>mdi-plus</VIcon>
-                New Event
-              </VBtn>
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-
       <!-- Calendar Grid -->
       <div
         v-if="selectedCalendarIds.length > 0"
@@ -196,6 +103,7 @@ import EventModal from "~/components/EventModal.vue";
 import type { CalendarEvent } from "~/components/CalendarView.vue";
 import type { EventData, CalendarOption } from "~/components/EventModal.vue";
 import { useEvents } from "~/composables/useEvents";
+import type { EventModalMode } from "~/types";
 
 // Page metadata
 definePageMeta({
@@ -230,7 +138,7 @@ const { getAggregatedEvents, createEvent, updateEvent, deleteEvent, formatEventF
 const calendarRefs = ref<Record<string, InstanceType<typeof CalendarView> | null>>({});
 const showEventModal = ref(false);
 const selectedEvent = ref<EventData | null>(null);
-const modalMode = ref<"create" | "edit">("create");
+const modalMode = ref<EventModalMode>("create");
 const calendarEvents = ref<CalendarEvent[]>([]);
 const availableCalendars = ref<CalendarOption[]>([]);
 const selectedCalendarIds = ref<string[]>([]);
@@ -241,28 +149,11 @@ const snackbarStore = useSnackbarStore();
 const columnCount = ref(2);
 const paddingPx = ref(16);
 
-// Column options
-const columnOptions = [
-  { title: "1 Column", value: 1 },
-  { title: "2 Columns", value: 2 },
-  { title: "3 Columns", value: 3 },
-  { title: "4 Columns", value: 4 },
-];
-
 // Default values for new events
 const defaultCalendarId = ref("");
 const defaultStartTime = ref(new Date());
 const defaultEndTime = ref(new Date(Date.now() + 60 * 60 * 1000));
 const defaultAllDay = ref(false);
-
-// Computed properties
-const allCalendarsSelected = computed(() => {
-  return selectedCalendarIds.value.length === availableCalendars.value.length && availableCalendars.value.length > 0;
-});
-
-const someCalendarsSelected = computed(() => {
-  return selectedCalendarIds.value.length > 0;
-});
 
 const selectedCalendars = computed(() => {
   return availableCalendars.value.filter(cal => selectedCalendarIds.value.includes(cal.id));
@@ -404,15 +295,6 @@ const loadCalendars = async () => {
     }
   } catch {
     snackbarStore.error("Error", "Failed to load calendars");
-  }
-};
-
-// Calendar selection methods
-const toggleAllCalendars = () => {
-  if (allCalendarsSelected.value) {
-    selectedCalendarIds.value = [];
-  } else {
-    selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
   }
 };
 
