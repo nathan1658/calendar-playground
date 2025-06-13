@@ -222,10 +222,25 @@ defineExpose({
   margin-bottom: 1rem;
 }
 
+:deep(.fc-toolbar-chunk) {
+  display: flex;
+}
+
 :deep(.fc-button) {
   border-radius: 4px;
   text-transform: none;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.fc-button .fc-icon) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 :deep(.fc-button-primary) {
@@ -252,5 +267,11 @@ defineExpose({
 :deep(.fc-timegrid-event) {
   border-radius: 4px;
   padding: 2px 4px;
+}
+
+:deep(.fc-prev-button .fc-icon),
+:deep(.fc-next-button .fc-icon) {
+  font-size: 14px;
+  line-height: 1;
 }
 </style>
