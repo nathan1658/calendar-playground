@@ -332,6 +332,18 @@ watch(isLoggedIn, async (newValue, oldValue) => {
   }
 });
 
+// Watch for column count changes and resize calendars
+watch(columnCount, () => {
+  nextTick(() => {
+    Object.values(calendarRefs.value).forEach(calendarRef => {
+      if (calendarRef) {
+        const calendarApi = calendarRef.getCalendarApi();
+        calendarApi?.updateSize();
+      }
+    });
+  });
+});
+
 // Check for view parameter and load view configuration
 const checkViewParameter = async () => {
   const route = useRoute();

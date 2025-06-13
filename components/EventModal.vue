@@ -11,7 +11,10 @@
     :actions="dialogActions"
   >
     <!-- Read Mode View -->
-    <div v-if="isReadMode" class="event-view">
+    <div
+      v-if="isReadMode"
+      class="event-view"
+    >
       <!-- Event Header -->
       <div class="event-header">
         <div class="event-title-section">
@@ -36,7 +39,10 @@
       <!-- Event Details Cards -->
       <div class="event-details">
         <!-- Time & Duration Card -->
-        <VCard class="detail-card mb-4" variant="tonal">
+        <VCard
+          class="detail-card mb-4"
+          variant="outlined"
+        >
           <VCardText class="pa-4">
             <div class="d-flex align-center mb-3">
               <VIcon
@@ -47,7 +53,7 @@
               />
               <span class="text-subtitle-1 font-weight-medium">When</span>
             </div>
-            
+
             <div class="time-details">
               <div class="d-flex align-center mb-2">
                 <VIcon
@@ -58,10 +64,15 @@
                 />
                 <span class="text-body-1">
                   <strong>{{ formatDate(formData.startDate) }}</strong>
-                  <span v-if="!formData.allDay" class="ml-2">at {{ formatTime(formData.startTime) }}</span>
+                  <span
+                    v-if="!formData.allDay"
+                    class="ml-2"
+                  >
+                    at {{ formatTime(formData.startTime) }}
+                  </span>
                 </span>
               </div>
-              
+
               <div class="d-flex align-center mb-2">
                 <VIcon
                   :icon="formData.allDay ? 'mdi-weather-sunset' : 'mdi-clock-end'"
@@ -71,11 +82,19 @@
                 />
                 <span class="text-body-1">
                   <strong>{{ formatDate(formData.endDate) }}</strong>
-                  <span v-if="!formData.allDay" class="ml-2">at {{ formatTime(formData.endTime) }}</span>
+                  <span
+                    v-if="!formData.allDay"
+                    class="ml-2"
+                  >
+                    at {{ formatTime(formData.endTime) }}
+                  </span>
                 </span>
               </div>
 
-              <div v-if="formData.allDay" class="all-day-indicator">
+              <div
+                v-if="formData.allDay"
+                class="all-day-indicator"
+              >
                 <VIcon
                   icon="mdi-calendar-clock"
                   color="info"
@@ -84,8 +103,11 @@
                 />
                 <span class="text-body-2 text-info">All day event</span>
               </div>
-              
-              <div v-if="eventDuration" class="duration-indicator mt-2">
+
+              <div
+                v-if="eventDuration"
+                class="duration-indicator mt-2"
+              >
                 <VIcon
                   icon="mdi-timer-outline"
                   color="info"
@@ -99,7 +121,11 @@
         </VCard>
 
         <!-- Description Card -->
-        <VCard v-if="formData.description" class="detail-card mb-4" variant="tonal">
+        <VCard
+          v-if="formData.description"
+          class="detail-card mb-4"
+          variant="outlined"
+        >
           <VCardText class="pa-4">
             <div class="d-flex align-center mb-3">
               <VIcon
@@ -117,7 +143,10 @@
         </VCard>
 
         <!-- Additional Info Card -->
-        <VCard class="detail-card" variant="tonal">
+        <VCard
+          class="detail-card"
+          variant="outlined"
+        >
           <VCardText class="pa-4">
             <div class="d-flex align-center mb-3">
               <VIcon
@@ -131,11 +160,11 @@
             <div class="info-grid">
               <div class="info-item">
                 <span class="info-label">Event Type:</span>
-                <span class="info-value">{{ formData.allDay ? 'All Day' : 'Timed Event' }}</span>
+                <span class="info-value">{{ formData.allDay ? "All Day" : "Timed Event" }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">Calendar:</span>
-                <span class="info-value">{{ selectedCalendarName || 'Unknown' }}</span>
+                <span class="info-value">{{ selectedCalendarName || "Unknown" }}</span>
               </div>
             </div>
           </VCardText>
@@ -1048,7 +1077,6 @@ watch(
 .detail-card {
   border-radius: 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(var(--v-theme-outline), 0.2);
 }
 
 .detail-card:hover {

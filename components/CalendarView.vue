@@ -87,7 +87,8 @@ const calendarOptions = computed<CalendarOptions>(() => ({
   headerToolbar: {
     left: "prev,next today",
     center: "title",
-    right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+    right: "",
+    //right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
   },
   editable: props.editable,
   selectable: props.selectable,
