@@ -1,16 +1,151 @@
 <template>
   <BaseDialog
     v-model="isOpen"
-    :title="isEditMode ? 'Edit Event' : 'Create New Event'"
-    :subtitle="isEditMode ? 'Update event details' : 'Schedule a new event'"
-    :icon="isEditMode ? 'mdi-calendar-edit' : 'mdi-calendar-plus'"
+    :title="getDialogTitle()"
+    :subtitle="getDialogSubtitle()"
+    :icon="getDialogIcon()"
     icon-color="primary"
     max-width="700"
     persistent
     :loading="isSubmitting || isDeleting"
     :actions="dialogActions"
   >
+    <!-- Read Mode View -->
+    <div v-if="isReadMode" class="event-view">
+      <!-- Event Header -->
+      <div class="event-header">
+        <div class="event-title-section">
+          <h2 class="event-title">{{ formData.subject }}</h2>
+          <VChip
+            v-if="selectedCalendarName"
+            :color="getCalendarColor()"
+            size="small"
+            variant="tonal"
+            class="mt-2"
+          >
+            <VIcon
+              icon="mdi-calendar"
+              size="14"
+              class="mr-1"
+            />
+            {{ selectedCalendarName }}
+          </VChip>
+        </div>
+      </div>
+
+      <!-- Event Details Cards -->
+      <div class="event-details">
+        <!-- Time & Duration Card -->
+        <VCard class="detail-card mb-4" variant="tonal">
+          <VCardText class="pa-4">
+            <div class="d-flex align-center mb-3">
+              <VIcon
+                icon="mdi-clock-outline"
+                color="primary"
+                size="20"
+                class="mr-2"
+              />
+              <span class="text-subtitle-1 font-weight-medium">When</span>
+            </div>
+            
+            <div class="time-details">
+              <div class="d-flex align-center mb-2">
+                <VIcon
+                  :icon="formData.allDay ? 'mdi-weather-sunny' : 'mdi-clock-start'"
+                  :color="formData.allDay ? 'warning' : 'success'"
+                  size="16"
+                  class="mr-2"
+                />
+                <span class="text-body-1">
+                  <strong>{{ formatDate(formData.startDate) }}</strong>
+                  <span v-if="!formData.allDay" class="ml-2">at {{ formatTime(formData.startTime) }}</span>
+                </span>
+              </div>
+              
+              <div class="d-flex align-center mb-2">
+                <VIcon
+                  :icon="formData.allDay ? 'mdi-weather-sunset' : 'mdi-clock-end'"
+                  :color="formData.allDay ? 'warning' : 'error'"
+                  size="16"
+                  class="mr-2"
+                />
+                <span class="text-body-1">
+                  <strong>{{ formatDate(formData.endDate) }}</strong>
+                  <span v-if="!formData.allDay" class="ml-2">at {{ formatTime(formData.endTime) }}</span>
+                </span>
+              </div>
+
+              <div v-if="formData.allDay" class="all-day-indicator">
+                <VIcon
+                  icon="mdi-calendar-clock"
+                  color="info"
+                  size="16"
+                  class="mr-2"
+                />
+                <span class="text-body-2 text-info">All day event</span>
+              </div>
+              
+              <div v-if="eventDuration" class="duration-indicator mt-2">
+                <VIcon
+                  icon="mdi-timer-outline"
+                  color="info"
+                  size="16"
+                  class="mr-2"
+                />
+                <span class="text-body-2 text-info">Duration: {{ eventDuration }}</span>
+              </div>
+            </div>
+          </VCardText>
+        </VCard>
+
+        <!-- Description Card -->
+        <VCard v-if="formData.description" class="detail-card mb-4" variant="tonal">
+          <VCardText class="pa-4">
+            <div class="d-flex align-center mb-3">
+              <VIcon
+                icon="mdi-text-box-outline"
+                color="primary"
+                size="20"
+                class="mr-2"
+              />
+              <span class="text-subtitle-1 font-weight-medium">Description</span>
+            </div>
+            <div class="description-content">
+              <p class="text-body-1 mb-0">{{ formData.description }}</p>
+            </div>
+          </VCardText>
+        </VCard>
+
+        <!-- Additional Info Card -->
+        <VCard class="detail-card" variant="tonal">
+          <VCardText class="pa-4">
+            <div class="d-flex align-center mb-3">
+              <VIcon
+                icon="mdi-information-outline"
+                color="primary"
+                size="20"
+                class="mr-2"
+              />
+              <span class="text-subtitle-1 font-weight-medium">Event Information</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Event Type:</span>
+                <span class="info-value">{{ formData.allDay ? 'All Day' : 'Timed Event' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Calendar:</span>
+                <span class="info-value">{{ selectedCalendarName || 'Unknown' }}</span>
+              </div>
+            </div>
+          </VCardText>
+        </VCard>
+      </div>
+    </div>
+
+    <!-- Form Mode (Create/Edit) -->
     <VForm
+      v-else
       ref="formRef"
       v-model="isFormValid"
       class="event-form"
@@ -23,6 +158,7 @@
           label="Event Title"
           placeholder="Enter a descriptive title for your event"
           :rules="subjectRules"
+          :readonly="isReadMode"
           required
           variant="outlined"
           density="comfortable"
@@ -46,6 +182,7 @@
           label="Description (Optional)"
           placeholder="Add additional details about this event..."
           :rules="descriptionRules"
+          :readonly="isReadMode"
           variant="outlined"
           density="comfortable"
           hide-details="auto"
@@ -72,6 +209,7 @@
           label="Calendar"
           placeholder="Select which calendar to add this event to"
           :rules="calendarRules"
+          :readonly="isReadMode"
           required
           variant="outlined"
           density="comfortable"
@@ -124,6 +262,7 @@
             <VCheckbox
               v-model="formData.allDay"
               color="primary"
+              :readonly="isReadMode"
               hide-details
               density="compact"
               class="all-day-checkbox"
@@ -131,7 +270,8 @@
             <div class="flex-grow-1 ml-2">
               <div
                 class="all-day-title"
-                @click="formData.allDay = !formData.allDay"
+                :class="{ 'read-only': isReadMode }"
+                @click="!isReadMode && (formData.allDay = !formData.allDay)"
               >
                 All Day Event
               </div>
@@ -157,6 +297,7 @@
               label="Start Date"
               type="date"
               :rules="startDateRules"
+              :readonly="isReadMode"
               required
               variant="outlined"
               density="comfortable"
@@ -183,6 +324,7 @@
               label="Start Time"
               type="time"
               :rules="startTimeRules"
+              :readonly="isReadMode"
               required
               variant="outlined"
               density="comfortable"
@@ -206,6 +348,7 @@
               label="End Date"
               type="date"
               :rules="endDateRules"
+              :readonly="isReadMode"
               required
               variant="outlined"
               density="comfortable"
@@ -232,6 +375,7 @@
               label="End Time"
               type="time"
               :rules="endTimeRules"
+              :readonly="isReadMode"
               required
               variant="outlined"
               density="comfortable"
@@ -333,6 +477,7 @@ const isSubmitting = ref(false);
 const isDeleting = ref(false);
 
 const isEditMode = computed(() => props.mode === "edit" || !!props.event?.id);
+const isReadMode = computed(() => props.mode === "read");
 
 const calendarOptions = computed(() => {
   return props.calendars.map(cal => ({
@@ -477,6 +622,17 @@ const handleCancel = () => {
 
 // Dialog actions
 const dialogActions = computed(() => {
+  if (isReadMode.value) {
+    return [
+      {
+        text: "Close",
+        variant: "elevated" as const,
+        color: "primary",
+        onClick: handleCancel,
+      },
+    ];
+  }
+
   const actions = [
     {
       text: "Cancel",
@@ -558,6 +714,66 @@ const eventDuration = computed(() => {
   return diffMinutes === 1 ? "1 minute" : `${diffMinutes} minutes`;
 });
 
+// Dialog title, subtitle, and icon based on mode
+const getDialogTitle = () => {
+  if (isReadMode.value) return "Event Details";
+  return isEditMode.value ? "Edit Event" : "Create New Event";
+};
+
+const getDialogSubtitle = () => {
+  if (isReadMode.value) return "View event information";
+  return isEditMode.value ? "Update event details" : "Schedule a new event";
+};
+
+const getDialogIcon = () => {
+  if (isReadMode.value) return "mdi-calendar-check";
+  return isEditMode.value ? "mdi-calendar-edit" : "mdi-calendar-plus";
+};
+
+// Helper functions for read mode view
+const formatDate = (dateString: string): string => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const formatTime = (timeString: string): string => {
+  if (!timeString) return "";
+  const [hours, minutes] = timeString.split(":");
+  const date = new Date();
+  date.setHours(parseInt(hours), parseInt(minutes));
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+// Computed properties for read mode view
+const selectedCalendarName = computed(() => {
+  const calendar = props.calendars.find(cal => cal.id === formData.calendarId);
+  return calendar?.name || "";
+});
+
+const getCalendarColor = (): string => {
+  const calendar = props.calendars.find(cal => cal.id === formData.calendarId);
+  const category = calendar?.category || "default";
+  const colorMap: Record<string, string> = {
+    work: "blue",
+    personal: "green",
+    meetings: "orange",
+    holidays: "red",
+    projects: "purple",
+    default: "primary",
+  };
+  return colorMap[category] || colorMap.default;
+};
+
 // Watch for modal opening to initialize form
 watch(
   isOpen,
@@ -632,6 +848,11 @@ watch(
   border-color: rgb(var(--v-theme-primary));
 }
 
+:deep(.enhanced-field .v-field--readonly) {
+  background-color: rgba(var(--v-theme-surface-variant), 0.3);
+  opacity: 0.8;
+}
+
 /* All Day Card */
 .all-day-card {
   background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(var(--v-theme-primary), 0.04));
@@ -661,8 +882,12 @@ watch(
   margin-bottom: 4px;
 }
 
-.all-day-title:hover {
+.all-day-title:hover:not(.read-only) {
   color: rgb(var(--v-theme-primary));
+}
+
+.all-day-title.read-only {
+  cursor: default;
 }
 
 .all-day-description {
@@ -791,5 +1016,175 @@ watch(
 
 :deep(.v-field--focused .v-field__prepend-inner .v-icon) {
   transform: scale(1.1);
+}
+
+/* Read Mode Styles */
+.event-view {
+  padding: 0;
+}
+
+.event-header {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(var(--v-theme-primary), 0.04));
+  border-radius: 16px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+}
+
+.event-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+  margin: 0;
+  line-height: 1.3;
+}
+
+.event-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detail-card {
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(var(--v-theme-outline), 0.2);
+}
+
+.detail-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.time-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.all-day-indicator,
+.duration-indicator {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(var(--v-theme-info), 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-info), 0.2);
+}
+
+.description-content {
+  padding: 16px;
+  background: rgba(var(--v-theme-surface-variant), 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--v-theme-outline), 0.1);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(var(--v-theme-surface-variant), 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-outline), 0.1);
+}
+
+.info-label {
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.875rem;
+}
+
+.info-value {
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 0.875rem;
+}
+
+/* Animations for read mode */
+.event-view {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.detail-card {
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: backwards;
+}
+
+.detail-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.detail-card:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.detail-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design for read mode */
+@media (max-width: 768px) {
+  .event-header {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .event-title {
+    font-size: 1.5rem;
+  }
+
+  .detail-card {
+    margin-bottom: 16px;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .info-label {
+    font-size: 0.8rem;
+  }
+
+  .info-value {
+    font-size: 0.85rem;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .event-header {
+    background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.15), rgba(var(--v-theme-primary), 0.08));
+  }
+
+  .detail-card {
+    background: rgba(var(--v-theme-surface-variant), 0.8);
+  }
+
+  .description-content,
+  .info-item,
+  .all-day-indicator,
+  .duration-indicator {
+    background: rgba(var(--v-theme-surface-variant), 0.5);
+  }
 }
 </style>

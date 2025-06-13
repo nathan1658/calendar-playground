@@ -40,9 +40,9 @@
               :events="getCalendarEvents(calendar.id)"
               :height="600"
               @event-click="handleEventClick"
-              @event-drop="handleEventDrop"
-              @event-resize="handleEventResize"
-              @date-select="(start, end, allDay) => handleDateSelect(start, end, allDay, calendar.id)"
+              @event-drop="isLoggedIn ? handleEventDrop : () => {}"
+              @event-resize="isLoggedIn ? handleEventResize : () => {}"
+              @date-select="isLoggedIn ? (start: Date, end: Date, allDay: boolean) => handleDateSelect(start, end, allDay, calendar.id) : () => {}"
             />
           </VCardText>
         </VCard>
@@ -108,11 +108,11 @@ import type { EventModalMode } from "~/types";
 // Page metadata
 definePageMeta({
   title: "Calendar",
-  requiresAuth: true,
+  requiresAuth: false,
 });
 
 // Auth
-const { data } = useAuth();
+const { data, status } = useAuth();
 
 // User information
 const currentUser = computed(() => {
@@ -129,6 +129,7 @@ const currentUser = computed(() => {
 });
 
 const isAdmin = computed(() => currentUser.value?.roles?.includes("admin") || false);
+const isLoggedIn = computed(() => status.value === "authenticated" && !!currentUser.value);
 
 // Composables
 const { getAggregatedEvents, createEvent, updateEvent, deleteEvent, formatEventForCalendar, updateEventDates } =
@@ -206,6 +207,14 @@ onMounted(async () => {
   await loadEvents();
 });
 
+// Watch for authentication status changes
+watch(isLoggedIn, async (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    await loadCalendars();
+    await loadEvents();
+  }
+});
+
 // Check for view parameter and load view configuration
 const checkViewParameter = async () => {
   const route = useRoute();
@@ -255,14 +264,54 @@ const checkViewParameter = async () => {
   }
 };
 
+
 // Load events from API
 const loadEvents = async () => {
   try {
     isLoading.value = true;
-    const events = await getAggregatedEvents();
-    calendarEvents.value = events.map(formatEventForCalendar);
-  } catch {
-    snackbarStore.error("Error", "Failed to load events");
+    
+    if (isLoggedIn.value) {
+      const events = await getAggregatedEvents();
+      calendarEvents.value = events.map(formatEventForCalendar);
+    } else {
+      // For non-authenticated users, load public events
+      const response = await $fetch<{
+        events: Array<{
+          id: string;
+          calendar: {
+            id: string;
+            name: string;
+            category?: string;
+          };
+          subject: string;
+          description?: string;
+          startTime: string;
+          endTime: string;
+          allDay: boolean;
+          createdBy: {
+            id: string;
+            username: string;
+            displayName?: string;
+          } | null;
+          createdAt: string;
+          updatedAt: string;
+        }>;
+        total: number;
+      }>("/api/public/events");
+      
+      calendarEvents.value = response.events
+        .filter(event => event.createdBy !== null) // Filter out events with null createdBy
+        .map(event => formatEventForCalendar({
+          ...event,
+          createdBy: event.createdBy! // We've filtered out nulls above
+        }));
+    }
+  } catch (error) {
+    console.error("Failed to load events:", error);
+    // For non-authenticated users, show a gentler message or just empty state
+    if (isLoggedIn.value) {
+      snackbarStore.error("Error", "Failed to load events");
+    }
   } finally {
     isLoading.value = false;
   }
@@ -277,7 +326,9 @@ const loadCalendars = async () => {
       category?: string;
     }
 
-    const response = await $fetch<{ calendars: CalendarApiResponse[] }>("/api/calendars");
+    // For non-authenticated users, try to load public calendars
+    const endpoint = isLoggedIn.value ? "/api/calendars" : "/api/public/calendars";
+    const response = await $fetch<{ calendars: CalendarApiResponse[] }>(endpoint);
     availableCalendars.value = response.calendars.map(cal => ({
       id: cal.id,
       name: cal.name,
@@ -293,8 +344,12 @@ const loadCalendars = async () => {
     if (availableCalendars.value.length > 0) {
       defaultCalendarId.value = availableCalendars.value[0].id;
     }
-  } catch {
-    snackbarStore.error("Error", "Failed to load calendars");
+  } catch (error) {
+    console.error("Failed to load calendars:", error);
+    // For non-authenticated users, show a gentler message or just empty state
+    if (isLoggedIn.value) {
+      snackbarStore.error("Error", "Failed to load calendars");
+    }
   }
 };
 
@@ -316,11 +371,13 @@ const handleEventClick = (event: CalendarEvent) => {
     endTime: new Date(event.end),
     allDay: event.allDay || false,
   };
-  modalMode.value = "edit";
+  modalMode.value = isLoggedIn.value ? "edit" : "read";
   showEventModal.value = true;
 };
 
 const handleDateSelect = (start: Date, end: Date, allDay: boolean, calendarId?: string) => {
+  if (!isLoggedIn.value) return;
+  
   defaultStartTime.value = start;
   defaultEndTime.value = end;
   defaultAllDay.value = allDay;
@@ -331,6 +388,8 @@ const handleDateSelect = (start: Date, end: Date, allDay: boolean, calendarId?: 
 };
 
 const handleEventDrop = async (eventId: string, newStart: Date, newEnd: Date) => {
+  if (!isLoggedIn.value) return;
+  
   try {
     await updateEventDates(eventId, newStart, newEnd);
     snackbarStore.success("Success", "Event updated successfully");
@@ -343,10 +402,13 @@ const handleEventDrop = async (eventId: string, newStart: Date, newEnd: Date) =>
 };
 
 const handleEventResize = async (eventId: string, newStart: Date, newEnd: Date) => {
+  if (!isLoggedIn.value) return;
   await handleEventDrop(eventId, newStart, newEnd);
 };
 
 const handleEventSubmit = async (eventData: EventData) => {
+  if (!isLoggedIn.value || modalMode.value === "read") return;
+  
   try {
     isLoading.value = true;
 
@@ -368,6 +430,8 @@ const handleEventSubmit = async (eventData: EventData) => {
 };
 
 const handleEventDelete = async (eventId: string) => {
+  if (!isLoggedIn.value || modalMode.value === "read") return;
+  
   try {
     isLoading.value = true;
     await deleteEvent(eventId);
