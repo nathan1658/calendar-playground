@@ -10,7 +10,8 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "create-admin": "node scripts/create-admin.js"
+    "create-admin": "node scripts/create-admin.js",
+    "build:iis": "nuxt build --preset=iis-node"
   },
   "dependencies": {
     "@auth/core": "^0.39.1",
