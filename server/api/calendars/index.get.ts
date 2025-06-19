@@ -1,10 +1,9 @@
 import { Calendar } from "~/server/models/Calendar.model";
-import { getOptionalAuth } from "~/server/utils/auth";
 import type { PopulatedCalendar } from "~/types/database";
 
 export default defineEventHandler(async event => {
   // Get optional authentication (null if not authenticated)
-  const currentUser = await getOptionalAuth(event);
+  const currentUser = await optionalAuthentication(event);
 
   let calendars;
 
@@ -23,11 +22,7 @@ export default defineEventHandler(async event => {
   } else {
     // Regular users can see calendars they have permission for + public calendars
     calendars = (await Calendar.find({
-      $or: [
-        { "permissions.userId": currentUser.id },
-        { ownerId: currentUser.id },
-        { isPublic: true },
-      ],
+      $or: [{ "permissions.userId": currentUser.id }, { ownerId: currentUser.id }, { isPublic: true }],
     })
       .populate("ownerId", "username displayName")
       .populate("permissions.userId", "username displayName")

@@ -1,10 +1,9 @@
 import { Calendar, type ICalendarPermission } from "~/server/models/Calendar.model";
-import { requireAdminAuth } from "~/server/utils/auth";
 import type { PopulatedCalendar } from "~/server/utils/types";
 
 export default defineEventHandler(async event => {
   // Require admin authentication
-  await requireAdminAuth(event);
+  await requireAdminAuthentication(event);
 
   const calendarId = getRouterParam(event, "id");
   const userId = getRouterParam(event, "userId");

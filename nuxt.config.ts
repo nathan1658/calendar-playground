@@ -17,6 +17,7 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+  extends: ["../hksh-auth-layer"],
   auth: {
     provider: {
       type: "authjs",
@@ -32,7 +33,7 @@ export default defineNuxtConfig({
     initialAdminPassword: process.env.INITIAL_ADMIN_PASSWORD || "password",
   },
   i18n: {
-    langDir: "./i18n/locales",
+    langDir: "./locales",
     defaultLocale: "zh-tc",
     locales: [
       { code: "zh-tc", file: "zh-tc.ts", dir: "ltr" },

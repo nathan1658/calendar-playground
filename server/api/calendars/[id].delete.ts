@@ -1,9 +1,8 @@
 import { Calendar } from "~/server/models/Calendar.model";
-import { requireAdminAuth } from "~/server/utils/auth";
 
 export default defineEventHandler(async event => {
   // Require admin authentication
-  await requireAdminAuth(event);
+  await requireAdminAuthentication(event);
 
   const calendarId = getRouterParam(event, "id");
 

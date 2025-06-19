@@ -1,12 +1,11 @@
 import { Event } from "~/server/models/Event.model";
-import { getOptionalAuth } from "~/server/utils/auth";
 import { requireCalendarAccess } from "~/server/utils/permissions";
-import { eventsQuerySchema, type EventsQueryInput } from "~/types/validation";
+import { eventsQuerySchema } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {
     // Get optional authentication
-    const currentUser = await getOptionalAuth(event);
+    const currentUser = await optionalAuthentication(event);
 
     const calendarId = getRouterParam(event, "calendarId");
     if (!calendarId) {

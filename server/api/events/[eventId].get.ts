@@ -1,10 +1,9 @@
 import { Event } from "~/server/models/Event.model";
-import { requireAuth } from "~/server/utils/auth";
 import { requireCalendarPermission } from "~/server/utils/permissions";
 
 export default defineEventHandler(async event => {
   // Require authentication
-  const currentUser = await requireAuth(event);
+  const currentUser = await requireAuthentication(event);
 
   const eventId = getRouterParam(event, "eventId");
   if (!eventId) {

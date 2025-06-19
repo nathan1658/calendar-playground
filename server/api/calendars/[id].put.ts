@@ -1,10 +1,9 @@
 import { Calendar } from "~/server/models/Calendar.model";
-import { requireAuth } from "~/server/utils/auth";
-import { updateCalendarSchema, type UpdateCalendarInput } from "~/types/validation";
+import { updateCalendarSchema } from "~/types/validation";
 import type { PopulatedCalendar } from "~/types/database";
 
 export default defineEventHandler(async event => {
-  const currentUser = await requireAuth(event);
+  const currentUser = await requireAuthentication(event);
   const calendarId = getRouterParam(event, "id");
 
   if (!calendarId) {

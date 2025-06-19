@@ -1,5 +1,3 @@
-import { getConnectionState } from "~/server/utils/database";
-
 export default defineEventHandler(async _event => {
   const dbState = getConnectionState();
 

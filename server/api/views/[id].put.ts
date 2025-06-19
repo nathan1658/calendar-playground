@@ -1,19 +1,23 @@
 import { View } from "~/server/models/View.model";
 import { Calendar } from "~/server/models/Calendar.model";
-import { requireAdminAuth } from "~/server/utils/auth";
 import { z } from "zod";
 
 const updateViewSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  alias: z.string().min(1).max(50).regex(/^[a-zA-Z0-9_-]+$/).optional(),
+  alias: z
+    .string()
+    .min(1)
+    .max(50)
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .optional(),
   selectedCalendarIds: z.array(z.string()).min(1).optional(),
   columnCount: z.number().min(1).max(4).optional(),
   paddingPx: z.number().min(0).max(50).optional(),
 });
 
 export default defineEventHandler(async event => {
-  await requireAdminAuth(event);
-  
+  await requireAdminAuthentication(event);
+
   const id = getRouterParam(event, "id");
   if (!id) {
     throw createError({

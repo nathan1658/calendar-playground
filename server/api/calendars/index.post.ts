@@ -1,11 +1,10 @@
 import { Calendar } from "~/server/models/Calendar.model";
-import { requireAdminAuth } from "~/server/utils/auth";
-import { createCalendarSchema, type CreateCalendarInput } from "~/types/validation";
+import { createCalendarSchema } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {
     // Require admin authentication
-    const currentUser = await requireAdminAuth(event);
+    const currentUser = await requireAdminAuthentication(event);
 
     const body = await readBody(event);
     const { name, category, ownerId, isPublic } = createCalendarSchema.parse(body);

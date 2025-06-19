@@ -1,12 +1,11 @@
 import { Event } from "~/server/models/Event.model";
-import { requireAuth } from "~/server/utils/auth";
 import { requireCalendarPermission } from "~/server/utils/permissions";
-import { createEventSchema, type CreateEventInput } from "~/types/validation";
+import { createEventSchema } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {
     // Require authentication
-    const currentUser = await requireAuth(event);
+    const currentUser = await requireAuthentication(event);
 
     const body = await readBody(event);
     const { calendarId, subject, description, startTime, endTime, allDay } = createEventSchema.parse(body);

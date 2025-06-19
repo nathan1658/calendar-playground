@@ -1,10 +1,9 @@
 import { Calendar } from "~/server/models/Calendar.model";
-import { getOptionalAuth } from "~/server/utils/auth";
 import { requireCalendarAccess } from "~/server/utils/permissions";
 import type { PopulatedCalendar } from "~/types/database";
 
 export default defineEventHandler(async event => {
-  const currentUser = await getOptionalAuth(event);
+  const currentUser = await optionalAuthentication(event);
   const calendarId = getRouterParam(event, "id");
 
   if (!calendarId) {

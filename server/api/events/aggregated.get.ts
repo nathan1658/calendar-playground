@@ -1,13 +1,12 @@
 import { Event } from "~/server/models/Event.model";
 import { Calendar } from "~/server/models/Calendar.model";
-import { getOptionalAuth } from "~/server/utils/auth";
 import { getAllAccessibleCalendarIds } from "~/server/utils/permissions";
-import { aggregatedEventsQuerySchema, type AggregatedEventsQueryInput } from "~/types/validation";
+import { aggregatedEventsQuerySchema } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {
     // Get optional authentication
-    const currentUser = await getOptionalAuth(event);
+    const currentUser = await optionalAuthentication(event);
 
     const query = getQuery(event);
     const { start, end, category, search, calendarIds } = aggregatedEventsQuerySchema.parse(query);
@@ -86,11 +85,13 @@ export default defineEventHandler(async event => {
       startTime: evt.startTime,
       endTime: evt.endTime,
       allDay: evt.allDay,
-      createdBy: evt.createdBy ? {
-        id: evt.createdBy._id.toString(),
-        username: evt.createdBy.username,
-        displayName: evt.createdBy.displayName,
-      } : null,
+      createdBy: evt.createdBy
+        ? {
+            id: evt.createdBy._id.toString(),
+            username: evt.createdBy.username,
+            displayName: evt.createdBy.displayName,
+          }
+        : null,
       createdAt: evt.createdAt,
       updatedAt: evt.updatedAt,
     }));

@@ -1,9 +1,8 @@
 import { View } from "~/server/models/View.model";
-import { requireAdminAuth } from "~/server/utils/auth";
 
 export default defineEventHandler(async event => {
-  await requireAdminAuth(event);
-  
+  await requireAdminAuthentication(event);
+
   const id = getRouterParam(event, "id");
   if (!id) {
     throw createError({
