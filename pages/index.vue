@@ -203,7 +203,7 @@ import EventModal from "~/components/EventModal.vue";
 import type { CalendarEvent } from "~/components/CalendarView.vue";
 import type { EventData, CalendarOption } from "~/components/EventModal.vue";
 import { useEvents } from "~/composables/useEvents";
-import type { EventModalMode } from "~/types";
+import type { EventModalMode, IUserPopulated } from "~/types";
 
 // Page metadata
 definePageMeta({
@@ -216,16 +216,7 @@ const { data, status } = useAuth();
 
 // User information
 const currentUser = computed(() => {
-  const sessionData = data.value as unknown as {
-    user: {
-      id: string;
-      username: string;
-      displayName?: string;
-      roles: string[];
-    };
-  } | null;
-
-  return sessionData?.user || null;
+  return data.value?.user || null;
 });
 
 const isAdmin = computed(() => currentUser.value?.roles?.includes("admin") || false);
@@ -416,11 +407,7 @@ const loadEvents = async () => {
           startTime: string;
           endTime: string;
           allDay: boolean;
-          createdBy: {
-            id: string;
-            username: string;
-            displayName?: string;
-          } | null;
+          createdBy: IUserPopulated | null;
           createdAt: string;
           updatedAt: string;
         }>;

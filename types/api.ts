@@ -1,59 +1,4 @@
-import type { 
-  IUser, 
-  ICalendar, 
-  IEvent, 
-  PopulatedUser, 
-  PopulatedCalendar, 
-  PopulatedEvent,
-  ICalendarPermission 
-} from './database';
-
-// =============================================================================
-// AUTHENTICATION API TYPES
-// =============================================================================
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface AuthUser {
-  id: string;
-  username: string;
-  displayName?: string;
-  roles: string[];
-}
-
-export interface SessionResponse {
-  user: AuthUser | null;
-}
-
-// =============================================================================
-// USER API TYPES
-// =============================================================================
-
-export interface UserResponse {
-  id: string;
-  username: string;
-  displayName?: string;
-  roles: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface UsersListResponse {
-  users: UserResponse[];
-}
-
-export interface UpdateUserRequest {
-  displayName?: string;
-  roles?: string[];
-}
-
-export interface UserUpdateResponse {
-  user: UserResponse;
-  message: string;
-}
+import type { IEvent, PopulatedCalendar, IUserPopulated } from "./database";
 
 // =============================================================================
 // CALENDAR API TYPES
@@ -64,19 +9,11 @@ export interface CalendarResponse {
   name: string;
   category?: string;
   ownerId?: string;
-  owner?: {
-    id: string;
-    username: string;
-    displayName?: string;
-  } | null;
+  owner?: IUserPopulated | null;
   permissions: Array<{
     userId: string;
     accessLevel: "view" | "edit";
-    user: {
-      id: string;
-      username: string;
-      displayName?: string;
-    };
+    user: IUserPopulated;
   }>;
   isPublic: boolean;
   createdAt: Date;
@@ -135,11 +72,7 @@ export interface EventResponse {
   startTime: Date;
   endTime: Date;
   allDay: boolean;
-  createdBy: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  createdBy: IUserPopulated;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -272,19 +205,11 @@ export function toCalendarResponse(calendar: PopulatedCalendar): CalendarRespons
     name: calendar.name,
     category: calendar.category,
     ownerId: calendar.ownerId?._id?.toString(),
-    owner: calendar.ownerId ? {
-      id: calendar.ownerId._id.toString(),
-      username: calendar.ownerId.username,
-      displayName: calendar.ownerId.displayName,
-    } : null,
+    owner: calendar.ownerId,
     permissions: calendar.permissions.map(perm => ({
       userId: perm.userId._id.toString(),
       accessLevel: perm.accessLevel,
-      user: {
-        id: perm.userId._id.toString(),
-        username: perm.userId.username,
-        displayName: perm.userId.displayName,
-      },
+      user: perm.userId,
     })),
     isPublic: calendar.isPublic,
     createdAt: calendar.createdAt,
@@ -292,7 +217,7 @@ export function toCalendarResponse(calendar: PopulatedCalendar): CalendarRespons
   };
 }
 
-export function toEventResponse(event: IEvent, createdBy: PopulatedUser): EventResponse {
+export function toEventResponse(event: IEvent, createdBy: IUserPopulated): EventResponse {
   return {
     id: event._id.toString(),
     calendarId: event.calendarId.toString(),
@@ -301,23 +226,8 @@ export function toEventResponse(event: IEvent, createdBy: PopulatedUser): EventR
     startTime: event.startTime,
     endTime: event.endTime,
     allDay: event.allDay,
-    createdBy: {
-      id: createdBy._id.toString(),
-      username: createdBy.username,
-      displayName: createdBy.displayName,
-    },
+    createdBy: createdBy,
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
-  };
-}
-
-export function toUserResponse(user: IUser): UserResponse {
-  return {
-    id: user._id.toString(),
-    username: user.username,
-    displayName: user.displayName,
-    roles: user.roles,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
   };
 }

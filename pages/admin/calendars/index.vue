@@ -7,7 +7,8 @@
 <script setup lang="ts">
 // Set page meta - removed admin layout, will use default
 definePageMeta({
-  middleware: "admin",
+  rolesAllowed: ["admin"],
+  middleware: ["roles-permission-check"],
 });
 
 // Set page head

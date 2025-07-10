@@ -1,5 +1,6 @@
 import type { EventData } from "~/components/EventModal.vue";
 import type { CalendarEvent } from "~/components/CalendarView.vue";
+import type { IUserPopulated } from "~/types";
 
 export interface EventFilters {
   start?: string;
@@ -34,11 +35,7 @@ export interface AggregatedEventResponse {
   startTime: string;
   endTime: string;
   allDay: boolean;
-  createdBy: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  createdBy: IUserPopulated;
   createdAt: string;
   updatedAt: string;
 }
@@ -107,7 +104,7 @@ export const useEvents = () => {
       isLoading.value = true;
       error.value = null;
 
-      await $fetch(`/api/events/${eventId}`, {
+      await $fetch<{ message: string }>(`/api/events/${eventId}`, {
         method: "DELETE",
       });
     } catch (err: any) {

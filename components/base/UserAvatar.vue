@@ -20,15 +20,7 @@
           :size="40"
           :color="avatarColor"
         >
-          <VImg
-            v-if="user?.avatar"
-            :src="user.avatar"
-            :alt="user.displayName || user.username"
-          />
-          <span
-            v-else
-            class="text-h6 font-weight-medium text-white"
-          >
+          <span class="text-h6 font-weight-medium text-white">
             {{ userInitials }}
           </span>
         </VAvatar>
@@ -48,15 +40,7 @@
               :color="avatarColor"
               class="mr-3"
             >
-              <VImg
-                v-if="user?.avatar"
-                :src="user.avatar"
-                :alt="user.displayName || user.username"
-              />
-              <span
-                v-else
-                class="text-h5 font-weight-medium text-white"
-              >
+              <span class="text-h5 font-weight-medium text-white">
                 {{ userInitials }}
               </span>
             </VAvatar>
@@ -147,16 +131,10 @@
 </template>
 
 <script setup lang="ts">
-interface User {
-  id: string;
-  username: string;
-  displayName?: string;
-  avatar?: string;
-  roles: string[];
-}
+import type { AuthenticatedUser } from "hksh-nuxt-base-layer/types/auth";
 
 interface Props {
-  user?: User | null;
+  user?: AuthenticatedUser | null;
 }
 
 const props = defineProps<Props>();
@@ -185,7 +163,7 @@ const isDark = computed(() => colorMode.value === "dark");
 const userInitials = computed(() => {
   if (!props.user) return "?";
 
-  const displayName = props.user.displayName || props.user.username;
+  const displayName = props.user.name || props.user.username;
   if (!displayName) return "?";
 
   const words = displayName.trim().split(" ");
@@ -207,7 +185,7 @@ const avatarColor = computed(() => {
 });
 
 const displayName = computed(() => {
-  return props.user?.displayName || props.user?.username || "Unknown User";
+  return props.user?.name || props.user?.username || "Unknown User";
 });
 
 const username = computed(() => {

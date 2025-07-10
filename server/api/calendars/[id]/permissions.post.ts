@@ -1,5 +1,4 @@
 import { Calendar } from "~/server/models/Calendar.model";
-import { User } from "~/server/models/User.model";
 import { addPermissionSchema } from "~/types/validation";
 import type { PopulatedCalendar, ICalendarPermission } from "~/types/database";
 
@@ -54,8 +53,8 @@ export default defineEventHandler(async event => {
 
   // Return updated calendar with populated fields
   const updatedCalendar = (await Calendar.findById(calendarId)
-    .populate("ownerId", "username displayName")
-    .populate("permissions.userId", "username displayName")) as PopulatedCalendar;
+    .populate("ownerId", "username name")
+    .populate("permissions.userId", "username name")) as PopulatedCalendar;
 
   return {
     message: existingPermission ? "Permission updated successfully" : "Permission added successfully",
@@ -66,11 +65,7 @@ export default defineEventHandler(async event => {
       permissions: updatedCalendar.permissions.map(perm => ({
         userId: perm.userId._id.toString(),
         accessLevel: perm.accessLevel,
-        user: {
-          id: perm.userId._id.toString(),
-          username: perm.userId.username,
-          displayName: perm.userId.displayName,
-        },
+        user: perm.userId,
       })),
     },
   };

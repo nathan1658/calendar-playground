@@ -19,7 +19,7 @@ export default defineEventHandler(async () => {
       calendarId: { $in: publicCalendarIds },
     })
       .populate("calendarId", "name category")
-      .populate("createdBy", "username displayName")
+      .populate("createdBy", "username name")
       .sort({ startTime: 1 });
 
     const formattedEvents = events.map(evt => ({
@@ -34,11 +34,7 @@ export default defineEventHandler(async () => {
       startTime: evt.startTime,
       endTime: evt.endTime,
       allDay: evt.allDay,
-      createdBy: evt.createdBy ? {
-        id: evt.createdBy._id.toString(),
-        username: evt.createdBy.username,
-        displayName: evt.createdBy.displayName,
-      } : null,
+      createdBy: evt.createdBy,
       createdAt: evt.createdAt,
       updatedAt: evt.updatedAt,
     }));

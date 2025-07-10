@@ -209,9 +209,7 @@
                   />
                   Calendar {{ i }}
                 </div>
-                <div class="preview-calendar-content">
-                  Calendar content area
-                </div>
+                <div class="preview-calendar-content">Calendar content area</div>
               </div>
             </div>
           </VCardText>
@@ -222,6 +220,8 @@
 </template>
 
 <script setup lang="ts">
+import BaseDialog from "../base/BaseDialog.vue";
+
 interface ViewData {
   id: string;
   name: string;
@@ -251,7 +251,7 @@ const emit = defineEmits<Emits>();
 
 const isOpen = computed({
   get: () => props.modelValue,
-  set: (value) => emit("update:modelValue", value),
+  set: value => emit("update:modelValue", value),
 });
 
 const formRef = ref();
@@ -295,7 +295,9 @@ const paddingRules = [
 
 // Calendar selection helpers
 const allCalendarsSelected = computed(() => {
-  return form.value.selectedCalendarIds.length === availableCalendars.value.length && availableCalendars.value.length > 0;
+  return (
+    form.value.selectedCalendarIds.length === availableCalendars.value.length && availableCalendars.value.length > 0
+  );
 });
 
 const someCalendarsSelected = computed(() => {
@@ -311,9 +313,9 @@ const toggleAllCalendars = () => {
 };
 
 // Dialog actions
-const dialogActions = computed(() => [
+const dialogActions = computed<InstanceType<typeof BaseDialog>["actions"]>(() => [
   {
-    label: "Cancel",
+    text: "Cancel",
     variant: "text",
     color: "grey",
     disabled: loading.value,
@@ -322,7 +324,7 @@ const dialogActions = computed(() => [
     },
   },
   {
-    label: "Update View",
+    text: "Update View",
     variant: "flat",
     color: "primary",
     loading: loading.value,
@@ -333,7 +335,7 @@ const dialogActions = computed(() => [
 
 const handleSubmit = async () => {
   if (!formRef.value || !props.view) return;
-  
+
   const { valid: formValid } = await formRef.value.validate();
   if (!formValid) return;
 
@@ -358,7 +360,9 @@ const handleSubmit = async () => {
 
 const loadCalendars = async () => {
   try {
-    const response = await $fetch<{ calendars: Array<{ id: string; name: string; category?: string }> }>("/api/calendars");
+    const response = await $fetch<{ calendars: Array<{ id: string; name: string; category?: string }> }>(
+      "/api/calendars",
+    );
     availableCalendars.value = response.calendars;
   } catch (error) {
     console.error("Failed to load calendars:", error);
@@ -378,18 +382,21 @@ const loadFormData = () => {
   }
 };
 
-watch(isOpen, (newValue) => {
+watch(isOpen, newValue => {
   if (newValue) {
     loadCalendars();
     loadFormData();
   }
 });
 
-watch(() => props.view, () => {
-  if (props.view && isOpen.value) {
-    loadFormData();
-  }
-});
+watch(
+  () => props.view,
+  () => {
+    if (props.view && isOpen.value) {
+      loadFormData();
+    }
+  },
+);
 </script>
 
 <style scoped>

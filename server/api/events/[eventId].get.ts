@@ -16,7 +16,7 @@ export default defineEventHandler(async event => {
   // Find the event
   const foundEvent = await Event.findById(eventId)
     .populate("calendarId", "name category")
-    .populate("createdBy", "username displayName");
+    .populate("createdBy", "username name");
 
   if (!foundEvent) {
     throw createError({
@@ -41,11 +41,7 @@ export default defineEventHandler(async event => {
       startTime: foundEvent.startTime,
       endTime: foundEvent.endTime,
       allDay: foundEvent.allDay,
-      createdBy: {
-        id: foundEvent.createdBy._id.toString(),
-        username: foundEvent.createdBy.username,
-        displayName: foundEvent.createdBy.displayName,
-      },
+      createdBy: foundEvent.createdBy,
       createdAt: foundEvent.createdAt,
       updatedAt: foundEvent.updatedAt,
     },

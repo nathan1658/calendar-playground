@@ -7,7 +7,7 @@ export default defineEventHandler(async event => {
 
   const views = (await View.find()
     .populate("selectedCalendarIds", "name category")
-    .populate("createdBy", "username displayName")
+    .populate("createdBy", "username name")
     .sort({ createdAt: -1 })) as PopulatedView[];
 
   return {
@@ -23,11 +23,7 @@ export default defineEventHandler(async event => {
       })),
       columnCount: view.columnCount,
       paddingPx: view.paddingPx,
-      createdBy: {
-        id: view.createdBy._id.toString(),
-        username: view.createdBy.username,
-        displayName: view.createdBy.displayName,
-      },
+      createdBy: view.createdBy,
       createdAt: view.createdAt,
       updatedAt: view.updatedAt,
     })),

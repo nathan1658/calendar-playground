@@ -66,8 +66,8 @@
         <VSelect
           v-model="form.ownerId"
           :items="users"
-          item-title="displayName"
-          item-value="id"
+          item-title="name"
+          item-value="_id"
           label="Calendar Owner (Optional)"
           placeholder="Select a calendar owner (defaults to you)"
           variant="outlined"
@@ -96,13 +96,10 @@
                   class="mr-3"
                 >
                   <span class="text-caption font-weight-bold">
-                    {{ (item.raw.displayName || item.raw.username || "?").charAt(0).toUpperCase() }}
+                    {{ (item.raw.name || item.raw.username || "?").charAt(0).toUpperCase() }}
                   </span>
                 </VAvatar>
               </template>
-              <VListItemTitle class="font-weight-medium">
-                {{ item.raw.displayName || item.raw.username || "Unknown User" }}
-              </VListItemTitle>
               <VListItemSubtitle class="text-caption">
                 {{ item.raw.username || "No username" }}
               </VListItemSubtitle>
@@ -119,10 +116,10 @@
                 class="mr-2"
               >
                 <span class="user-avatar-text">
-                  {{ (item.raw.displayName || item.raw.username || "?").charAt(0).toUpperCase() }}
+                  {{ (item.raw.name || item.raw.username || "?").charAt(0).toUpperCase() }}
                 </span>
               </VAvatar>
-              <span>{{ item.raw.displayName || item.raw.username || "Unknown User" }}</span>
+              <span>{{ item.raw.name || item.raw.username || "Unknown User" }}</span>
             </div>
           </template>
         </VSelect>
@@ -200,12 +197,7 @@
 
 <script setup lang="ts">
 import BaseDialog from "~/components/base/BaseDialog.vue";
-
-interface User {
-  id: string;
-  username: string;
-  displayName?: string;
-}
+import type { IUserApi } from "~/types";
 
 interface Emits {
   (e: "created"): void;
@@ -227,7 +219,7 @@ const formRef = ref();
 const valid = ref(false);
 const loading = ref(false);
 const errorMessage = ref("");
-const users = ref<User[]>([]);
+const users = ref<IUserApi[]>([]);
 
 const form = ref({
   name: "",
@@ -244,12 +236,7 @@ const nameRules = [
 const categoryRules = [(v: string) => !v || v.length <= 50 || "Category must be less than 50 characters"];
 
 const fetchUsers = async () => {
-  try {
-    const response = await $fetch<{ users: User[] }>("/api/users");
-    users.value = response.users;
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
-  }
+  users.value = await fetchAllUsers();
 };
 
 const handleSubmit = async () => {

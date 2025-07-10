@@ -2,6 +2,8 @@
 // FRONTEND COMPONENT INTERFACES
 // =============================================================================
 
+import type { IUserPopulated } from "./database";
+
 /**
  * Base props interface for modal components
  */
@@ -107,11 +109,7 @@ export interface CalendarViewData {
   id: string;
   name: string;
   category?: string;
-  owner?: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  owner?: IUserPopulated;
   isPublic: boolean;
   userAccess?: "view" | "edit" | "owner";
 }
@@ -148,22 +146,6 @@ export interface FilterPanelEmits {
   (e: "clear"): void;
 }
 
-// =============================================================================
-// ADMIN INTERFACES
-// =============================================================================
-
-/**
- * User data for admin interfaces
- */
-export interface AdminUserData {
-  id: string;
-  username: string;
-  displayName?: string;
-  roles: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
 /**
  * Calendar data for admin interfaces
  */
@@ -172,19 +154,11 @@ export interface AdminCalendarData {
   name: string;
   category?: string;
   isPublic?: boolean;
-  owner?: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  owner?: IUserPopulated;
   permissions: Array<{
     userId: string;
     accessLevel: "view" | "edit";
-    user: {
-      id: string;
-      username: string;
-      displayName?: string;
-    };
+    user: IUserPopulated;
   }>;
   createdAt: string;
   updatedAt: string;
@@ -196,11 +170,7 @@ export interface AdminCalendarData {
 export interface CalendarPermissionData {
   userId: string;
   accessLevel: "view" | "edit";
-  user: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  user: IUserPopulated;
 }
 
 /**
@@ -236,23 +206,6 @@ export interface CreateDialogEmits extends BaseModalEmits {
  */
 export interface EditDialogEmits extends BaseModalEmits {
   (e: "updated"): void;
-}
-
-// =============================================================================
-// USER AVATAR INTERFACES
-// =============================================================================
-
-/**
- * Props for UserAvatar component
- */
-export interface UserAvatarProps {
-  user: {
-    username: string;
-    displayName?: string;
-  };
-  size?: "small" | "default" | "large" | "x-large";
-  showName?: boolean;
-  showTooltip?: boolean;
 }
 
 // =============================================================================

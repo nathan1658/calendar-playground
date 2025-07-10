@@ -65,7 +65,7 @@ export default defineEventHandler(async event => {
 
   // Populate the response
   await view.populate("selectedCalendarIds", "name category");
-  await view.populate("createdBy", "username displayName");
+  await view.populate("createdBy", "username name");
 
   return {
     view: {
@@ -80,11 +80,7 @@ export default defineEventHandler(async event => {
       })),
       columnCount: view.columnCount,
       paddingPx: view.paddingPx,
-      createdBy: {
-        id: view.createdBy._id.toString(),
-        username: view.createdBy.username,
-        displayName: view.createdBy.displayName,
-      },
+      createdBy: view.createdBy,
       createdAt: view.createdAt,
       updatedAt: view.updatedAt,
     },

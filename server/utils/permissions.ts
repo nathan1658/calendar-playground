@@ -1,10 +1,10 @@
+import type { AuthenticatedUser } from "hksh-nuxt-base-layer/types/auth";
 import { Calendar } from "~/server/models/Calendar.model";
-import type { AuthUser } from "./auth";
-import type { ICalendarPermission } from "~/server/models/Calendar.model";
+import type { ICalendarPermission } from "~/types";
 
 export async function requireCalendarPermission(
   calendarId: string,
-  user: AuthUser,
+  user: AuthenticatedUser,
   requiredLevel: "view" | "edit" = "view",
 ): Promise<void> {
   // Admin users have access to all calendars
@@ -44,7 +44,7 @@ export async function requireCalendarPermission(
   }
 }
 
-export async function getUserAccessibleCalendarIds(user: AuthUser): Promise<string[]> {
+export async function getUserAccessibleCalendarIds(user: AuthenticatedUser): Promise<string[]> {
   // Admin users have access to all calendars
   if (user.roles.includes("admin")) {
     const allCalendars = await Calendar.find({}, "_id");
@@ -61,7 +61,7 @@ export async function getUserAccessibleCalendarIds(user: AuthUser): Promise<stri
 
 export async function requireCalendarAccess(
   calendarId: string,
-  user: AuthUser | null,
+  user: AuthenticatedUser | null,
   requiredLevel: "view" | "edit" = "view",
 ): Promise<void> {
   const calendar = await Calendar.findById(calendarId);
@@ -119,7 +119,7 @@ export async function getPublicCalendarIds(): Promise<string[]> {
   return publicCalendars.map(cal => cal._id.toString());
 }
 
-export async function getAllAccessibleCalendarIds(user: AuthUser | null): Promise<string[]> {
+export async function getAllAccessibleCalendarIds(user: AuthenticatedUser | null): Promise<string[]> {
   if (!user) {
     // Return only public calendars for unauthenticated users
     return await getPublicCalendarIds();
@@ -133,11 +133,7 @@ export async function getAllAccessibleCalendarIds(user: AuthUser | null): Promis
 
   // Find calendars where user is owner, has permissions, or calendar is public
   const calendars = await Calendar.find({
-    $or: [
-      { ownerId: user.id },
-      { "permissions.userId": user.id },
-      { isPublic: true },
-    ],
+    $or: [{ ownerId: user.id }, { "permissions.userId": user.id }, { isPublic: true }],
   });
 
   return calendars.map(cal => cal._id.toString());

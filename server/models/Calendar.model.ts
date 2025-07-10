@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import type { ICalendar, ICalendarPermission } from "~/types/database";
+import type { ICalendar } from "~/types/database";
 
 const { Schema, model, models } = mongoose;
 

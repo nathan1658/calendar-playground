@@ -1,6 +1,6 @@
 import { Event } from "~/server/models/Event.model";
 import { requireCalendarPermission } from "~/server/utils/permissions";
-import { updateEventSchema, type UpdateEventInput } from "~/types/validation";
+import { updateEventSchema } from "~/types/validation";
 
 export default defineEventHandler(async event => {
   try {
@@ -43,7 +43,7 @@ export default defineEventHandler(async event => {
       runValidators: true,
     })
       .populate("calendarId", "name category")
-      .populate("createdBy", "username displayName");
+      .populate("createdBy", "username name");
 
     return {
       event: {
@@ -58,11 +58,7 @@ export default defineEventHandler(async event => {
         startTime: updatedEvent!.startTime,
         endTime: updatedEvent!.endTime,
         allDay: updatedEvent!.allDay,
-        createdBy: {
-          id: updatedEvent!.createdBy._id.toString(),
-          username: updatedEvent!.createdBy.username,
-          displayName: updatedEvent!.createdBy.displayName,
-        },
+        createdBy: updatedEvent!.createdBy,
         createdAt: updatedEvent!.createdAt,
         updatedAt: updatedEvent!.updatedAt,
       },

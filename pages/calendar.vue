@@ -160,7 +160,6 @@
         size="64"
       />
     </VOverlay>
-
   </div>
 </template>
 
@@ -182,14 +181,7 @@ const { data } = useAuth();
 
 // User information
 const currentUser = computed(() => {
-  const sessionData = data.value as unknown as {
-    user: {
-      id: string;
-      username: string;
-      displayName?: string;
-      roles: string[];
-    };
-  } | null;
+  const sessionData = data.value;
 
   return sessionData?.user || null;
 });
@@ -396,7 +388,6 @@ const handleEventDelete = async (eventId: string) => {
     isLoading.value = false;
   }
 };
-
 </script>
 
 <style scoped>

@@ -92,10 +92,10 @@
               class="mr-2"
             >
               <span class="text-caption font-weight-bold">
-                {{ (item.createdBy.displayName || item.createdBy.username).charAt(0).toUpperCase() }}
+                {{ (item.createdBy.name || item.createdBy.username).charAt(0).toUpperCase() }}
               </span>
             </VAvatar>
-            <span class="text-body-2">{{ item.createdBy.displayName || item.createdBy.username }}</span>
+            <span class="text-body-2">{{ item.createdBy.name || item.createdBy.username }}</span>
           </div>
         </template>
 
@@ -173,9 +173,7 @@
         <!-- Enhanced Delete Content -->
         <VCardText class="pa-6">
           <div class="mb-4">
-            <p class="text-body-1 text-grey-darken-2 mb-3">
-              You are about to permanently delete the view:
-            </p>
+            <p class="text-body-1 text-grey-darken-2 mb-3">You are about to permanently delete the view:</p>
             <div class="d-flex align-center pa-3 bg-grey-lighten-4 rounded">
               <VIcon
                 icon="mdi-view-dashboard"
@@ -240,6 +238,8 @@
 </template>
 
 <script setup lang="ts">
+import type { IUserPopulated } from "~/types";
+
 interface ViewData {
   id: string;
   name: string;
@@ -252,11 +252,7 @@ interface ViewData {
   }>;
   columnCount: number;
   paddingPx: number;
-  createdBy: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  createdBy: IUserPopulated;
   createdAt: string;
   updatedAt: string;
 }
@@ -333,7 +329,7 @@ const confirmDelete = async () => {
     await $fetch(`/api/views/${selectedView.value.id}`, {
       method: "DELETE",
     });
-    
+
     snackbarStore.success("Success", "View deleted successfully");
     showDeleteDialog.value = false;
     await fetchViews();

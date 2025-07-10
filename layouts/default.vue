@@ -175,20 +175,13 @@ const handleLoginSuccess = (message?: string) => {
 
 // Make user data properly reactive
 const currentUser = computed(() => {
-  const sessionData = data.value as unknown as {
-    user: {
-      id: string;
-      username: string;
-      displayName?: string;
-      roles: string[];
-    };
-  } | null;
+  const sessionData = data.value;
 
   return sessionData?.user
     ? {
         id: sessionData.user.id,
         username: sessionData.user.username,
-        displayName: sessionData.user.displayName,
+        displayName: sessionData.user.name,
         roles: sessionData.user.roles,
       }
     : null;

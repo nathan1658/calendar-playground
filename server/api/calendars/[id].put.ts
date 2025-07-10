@@ -44,8 +44,8 @@ export default defineEventHandler(async event => {
     { $set: updates },
     { new: true, runValidators: true },
   )
-    .populate("ownerId", "username displayName")
-    .populate("permissions.userId", "username displayName")) as PopulatedCalendar;
+    .populate("ownerId", "username name")
+    .populate("permissions.userId", "username name")) as PopulatedCalendar;
 
   return {
     calendar: {
@@ -53,21 +53,11 @@ export default defineEventHandler(async event => {
       name: updatedCalendar.name,
       category: updatedCalendar.category,
       ownerId: updatedCalendar.ownerId?._id?.toString(),
-      owner: updatedCalendar.ownerId
-        ? {
-            id: updatedCalendar.ownerId._id.toString(),
-            username: updatedCalendar.ownerId.username,
-            displayName: updatedCalendar.ownerId.displayName,
-          }
-        : null,
+      owner: updatedCalendar.ownerId,
       permissions: updatedCalendar.permissions.map(perm => ({
         userId: perm.userId._id.toString(),
         accessLevel: perm.accessLevel,
-        user: {
-          id: perm.userId._id.toString(),
-          username: perm.userId.username,
-          displayName: perm.userId.displayName,
-        },
+        user: perm.userId,
       })),
       isPublic: updatedCalendar.isPublic,
       createdAt: updatedCalendar.createdAt,

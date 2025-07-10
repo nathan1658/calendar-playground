@@ -18,6 +18,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { CalendarOptions, DateSelectArg, EventDropArg, EventApi } from "@fullcalendar/core";
+import type { IUserPopulated } from "~/types";
 
 export interface CalendarEvent {
   id: string;
@@ -31,11 +32,7 @@ export interface CalendarEvent {
     description?: string;
     calendarId: string;
     calendarName: string;
-    createdBy?: {
-      id: string;
-      username: string;
-      displayName?: string;
-    };
+    createdBy?: IUserPopulated;
   };
 }
 

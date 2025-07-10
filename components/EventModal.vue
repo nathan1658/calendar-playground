@@ -273,12 +273,6 @@
               <VListItemTitle class="font-weight-medium">
                 {{ item.raw.name }}
               </VListItemTitle>
-              <VListItemSubtitle
-                v-if="item.raw.category"
-                class="text-caption"
-              >
-                {{ item.raw.category }}
-              </VListItemSubtitle>
             </VListItem>
           </template>
         </VSelect>
@@ -662,7 +656,7 @@ const dialogActions = computed(() => {
     ];
   }
 
-  const actions = [
+  const actions: InstanceType<typeof BaseDialog>["actions"] = [
     {
       text: "Cancel",
       variant: "text" as const,

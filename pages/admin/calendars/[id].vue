@@ -21,25 +21,37 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="d-flex justify-center pa-8">
-      <VProgressCircular indeterminate color="primary" size="48" />
+    <div
+      v-if="loading"
+      class="d-flex justify-center pa-8"
+    >
+      <VProgressCircular
+        indeterminate
+        color="primary"
+        size="48"
+      />
     </div>
 
     <!-- Main Content -->
-    <div v-else-if="calendar" class="content-grid">
+    <div
+      v-else-if="calendar"
+      class="content-grid"
+    >
       <div class="main-column">
         <!-- Calendar Information Card -->
         <BaseCard
           title="Calendar Information"
           icon="mdi-calendar"
           class="stagger-item mb-6"
-          :actions="[{
-            text: 'Edit',
-            onClick: () => showEditDialog = true,
-            variant: 'outlined',
-            color: 'primary',
-            icon: 'mdi-pencil'
-          }]"
+          :actions="[
+            {
+              text: 'Edit',
+              onClick: () => (showEditDialog = true),
+              variant: 'outlined',
+              color: 'primary',
+              icon: 'mdi-pencil',
+            },
+          ]"
         >
           <div class="info-grid">
             <div class="info-item">
@@ -53,7 +65,7 @@
             <div class="info-item">
               <div class="info-label">Owner</div>
               <div class="info-value">
-                {{ calendar.owner?.displayName || calendar.owner?.username || "No owner" }}
+                {{ calendar.owner?.name || calendar.owner?.username || "No owner" }}
               </div>
             </div>
             <div class="info-item">
@@ -68,13 +80,15 @@
           :title="`Permissions (${calendar.permissions.length})`"
           icon="mdi-account-multiple"
           class="stagger-item"
-          :actions="[{
-            text: 'Manage Permissions',
-            onClick: () => showPermissionsDialog = true,
-            variant: 'outlined',
-            color: 'primary',
-            icon: 'mdi-account-plus'
-          }]"
+          :actions="[
+            {
+              text: 'Manage Permissions',
+              onClick: () => (showPermissionsDialog = true),
+              variant: 'outlined',
+              color: 'primary',
+              icon: 'mdi-account-plus',
+            },
+          ]"
         >
           <VDataTable
             :headers="permissionHeaders"
@@ -87,7 +101,7 @@
             <template #item.user="{ item }">
               <div class="user-info">
                 <div class="user-name">
-                  {{ item.user.displayName || item.user.username }}
+                  {{ item.user.name || item.user.username }}
                 </div>
                 <div class="user-username text-caption text-grey">
                   {{ item.user.username }}
@@ -108,7 +122,12 @@
 
             <template #no-data>
               <div class="empty-state">
-                <VIcon icon="mdi-account-plus" size="48" color="grey-lighten-1" class="mb-3" />
+                <VIcon
+                  icon="mdi-account-plus"
+                  size="48"
+                  color="grey-lighten-1"
+                  class="mb-3"
+                />
                 <div class="text-body-1 text-grey">No permissions assigned yet</div>
                 <div class="text-body-2 text-grey-lighten-1 mt-1">Click "Manage Permissions" to add users</div>
               </div>
@@ -125,29 +144,50 @@
           class="stagger-item"
         >
           <div class="actions-list">
-            <div class="action-item" @click="showEditDialog = true">
+            <div
+              class="action-item"
+              @click="showEditDialog = true"
+            >
               <div class="action-icon">
-                <VIcon icon="mdi-pencil" size="20" color="primary" />
+                <VIcon
+                  icon="mdi-pencil"
+                  size="20"
+                  color="primary"
+                />
               </div>
               <div class="action-content">
                 <div class="action-title">Edit Calendar</div>
                 <div class="action-subtitle">Update name and category</div>
               </div>
             </div>
-            
-            <div class="action-item" @click="showPermissionsDialog = true">
+
+            <div
+              class="action-item"
+              @click="showPermissionsDialog = true"
+            >
               <div class="action-icon">
-                <VIcon icon="mdi-account-multiple" size="20" color="info" />
+                <VIcon
+                  icon="mdi-account-multiple"
+                  size="20"
+                  color="info"
+                />
               </div>
               <div class="action-content">
                 <div class="action-title">Manage Permissions</div>
                 <div class="action-subtitle">Add or remove user access</div>
               </div>
             </div>
-            
-            <div class="action-item danger" @click="showDeleteDialog = true">
+
+            <div
+              class="action-item danger"
+              @click="showDeleteDialog = true"
+            >
               <div class="action-icon">
-                <VIcon icon="mdi-delete" size="20" color="error" />
+                <VIcon
+                  icon="mdi-delete"
+                  size="20"
+                  color="error"
+                />
               </div>
               <div class="action-content">
                 <div class="action-title">Delete Calendar</div>
@@ -160,13 +200,30 @@
     </div>
 
     <!-- Error State -->
-    <div v-else class="error-state">
-      <BaseCard icon="mdi-alert-circle" color="error">
+    <div
+      v-else
+      class="error-state"
+    >
+      <BaseCard
+        icon="mdi-alert-circle"
+        color="error"
+      >
         <div class="text-center">
-          <VIcon icon="mdi-calendar-remove" size="64" color="error" class="mb-4" />
+          <VIcon
+            icon="mdi-calendar-remove"
+            size="64"
+            color="error"
+            class="mb-4"
+          />
           <div class="text-h6 mb-2">Calendar not found</div>
-          <div class="text-body-2 text-grey mb-4">The calendar you're looking for doesn't exist or has been deleted.</div>
-          <VBtn variant="outlined" color="primary" @click="$router.push('/admin/calendars')">
+          <div class="text-body-2 text-grey mb-4">
+            The calendar you're looking for doesn't exist or has been deleted.
+          </div>
+          <VBtn
+            variant="outlined"
+            color="primary"
+            @click="$router.push('/admin/calendars')"
+          >
             Back to Calendars
           </VBtn>
         </div>
@@ -197,21 +254,28 @@
       :actions="[
         {
           text: 'Cancel',
-          onClick: () => showDeleteDialog = false,
-          variant: 'text'
+          onClick: () => (showDeleteDialog = false),
+          variant: 'text',
         },
         {
           text: 'Delete',
           onClick: confirmDelete,
           color: 'error',
-          loading: deleting
-        }
+          loading: deleting,
+        },
       ]"
     >
       <div class="text-center">
-        <VIcon icon="mdi-delete-alert" size="64" color="error" class="mb-4" />
+        <VIcon
+          icon="mdi-delete-alert"
+          size="64"
+          color="error"
+          class="mb-4"
+        />
         <div class="text-body-1 mb-2">
-          Are you sure you want to delete the calendar <strong>"{{ calendar?.name }}"</strong>?
+          Are you sure you want to delete the calendar
+          <strong>"{{ calendar?.name }}"</strong>
+          ?
         </div>
         <div class="text-body-2 text-grey">
           This action cannot be undone and will permanently remove all associated events.
@@ -222,23 +286,17 @@
 </template>
 
 <script setup lang="ts">
+import type { IUserPopulated } from "~/types";
+
 interface Calendar {
   id: string;
   name: string;
   category?: string;
-  owner?: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  owner?: IUserPopulated;
   permissions: Array<{
     userId: string;
     accessLevel: "view" | "edit";
-    user: {
-      id: string;
-      username: string;
-      displayName?: string;
-    };
+    user: IUserPopulated;
   }>;
   createdAt: string;
   updatedAt: string;
@@ -246,7 +304,8 @@ interface Calendar {
 
 // Set page meta - removed admin layout, will use default
 definePageMeta({
-  middleware: "admin",
+  rolesAllowed: ["admin"],
+  middleware: ["roles-permission-check"],
 });
 
 const route = useRoute();
@@ -547,7 +606,7 @@ onMounted(() => {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .side-column {
     position: static;
   }
@@ -557,20 +616,20 @@ onMounted(() => {
   .page-container {
     padding: 16px;
   }
-  
+
   .page-header {
     margin-bottom: 24px;
   }
-  
+
   .info-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .action-item {
     padding: 12px;
   }
-  
+
   .action-icon {
     width: 36px;
     height: 36px;

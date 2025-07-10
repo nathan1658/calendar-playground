@@ -10,22 +10,22 @@ export default defineEventHandler(async event => {
   if (!currentUser) {
     // Unauthenticated users can only see public calendars
     calendars = (await Calendar.find({ isPublic: true })
-      .populate("ownerId", "username displayName")
-      .populate("permissions.userId", "username displayName")
+      .populate("ownerId", "username name")
+      .populate("permissions.userId", "username name")
       .sort({ createdAt: -1 })) as PopulatedCalendar[];
   } else if (currentUser.roles.includes("admin")) {
     // Admin can see all calendars
     calendars = (await Calendar.find()
-      .populate("ownerId", "username displayName")
-      .populate("permissions.userId", "username displayName")
+      .populate("ownerId", "username name")
+      .populate("permissions.userId", "username name")
       .sort({ createdAt: -1 })) as PopulatedCalendar[];
   } else {
     // Regular users can see calendars they have permission for + public calendars
     calendars = (await Calendar.find({
       $or: [{ "permissions.userId": currentUser.id }, { ownerId: currentUser.id }, { isPublic: true }],
     })
-      .populate("ownerId", "username displayName")
-      .populate("permissions.userId", "username displayName")
+      .populate("ownerId", "username name")
+      .populate("permissions.userId", "username name")
       .sort({ createdAt: -1 })) as PopulatedCalendar[];
   }
 
@@ -35,21 +35,11 @@ export default defineEventHandler(async event => {
       name: calendar.name,
       category: calendar.category,
       ownerId: calendar.ownerId?._id?.toString(),
-      owner: calendar.ownerId
-        ? {
-            id: calendar.ownerId._id.toString(),
-            username: calendar.ownerId.username,
-            displayName: calendar.ownerId.displayName,
-          }
-        : null,
+      owner: calendar.ownerId,
       permissions: calendar.permissions.map(perm => ({
         userId: perm.userId._id.toString(),
         accessLevel: perm.accessLevel,
-        user: {
-          id: perm.userId._id.toString(),
-          username: perm.userId.username,
-          displayName: perm.userId.displayName,
-        },
+        user: perm.userId,
       })),
       isPublic: calendar.isPublic,
       createdAt: calendar.createdAt,

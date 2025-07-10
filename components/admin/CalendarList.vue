@@ -60,10 +60,10 @@
               class="mr-2"
             >
               <span class="text-caption font-weight-bold">
-                {{ (item.owner.displayName || item.owner.username).charAt(0).toUpperCase() }}
+                {{ (item.owner.name || item.owner.username).charAt(0).toUpperCase() }}
               </span>
             </VAvatar>
-            <span class="text-body-2">{{ item.owner.displayName || item.owner.username }}</span>
+            <span class="text-body-2">{{ item.owner.name || item.owner.username }}</span>
           </div>
           <span
             v-else
@@ -285,24 +285,18 @@
 </template>
 
 <script setup lang="ts">
+import type { IUserPopulated } from "~/types";
+
 interface Calendar {
   id: string;
   name: string;
   category?: string;
   isPublic?: boolean;
-  owner?: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  owner?: IUserPopulated;
   permissions: Array<{
     userId: string;
     accessLevel: "view" | "edit";
-    user: {
-      id: string;
-      username: string;
-      displayName?: string;
-    };
+    user: IUserPopulated;
   }>;
   createdAt: string;
   updatedAt: string;

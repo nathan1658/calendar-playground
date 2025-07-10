@@ -21,11 +21,13 @@ const viewSchema = new Schema(
       maxlength: 50,
       match: /^[a-zA-Z0-9_-]+$/,
     },
-    selectedCalendarIds: [{
-      type: Schema.Types.ObjectId,
-      ref: "Calendar",
-      required: true,
-    }],
+    selectedCalendarIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Calendar",
+        required: true,
+      },
+    ],
     columnCount: {
       type: Number,
       required: true,
@@ -55,7 +57,6 @@ const viewSchema = new Schema(
 );
 
 // Index for performance on queries
-viewSchema.index({ alias: 1 });
 viewSchema.index({ createdBy: 1 });
 viewSchema.index({ name: 1 });
 

@@ -24,8 +24,8 @@
                   v-model="newPermission.userId"
                   label="Select User"
                   :items="availableUsers"
-                  item-title="displayName"
-                  item-value="id"
+                  item-title="name"
+                  item-value="_id"
                   variant="outlined"
                 >
                   <template #item="{ props, item }">
@@ -33,9 +33,6 @@
                       v-if="item?.raw"
                       v-bind="props"
                     >
-                      <VListItemTitle>
-                        {{ item.raw.displayName || item.raw.username || "Unknown User" }}
-                      </VListItemTitle>
                       <VListItemSubtitle>
                         {{ item.raw.username || "No username" }}
                       </VListItemSubtitle>
@@ -86,7 +83,7 @@
               <template #item.user="{ item }">
                 <div>
                   <div class="font-weight-medium">
-                    {{ item.user.displayName || item.user.username }}
+                    {{ item.user.name || item.user.username }}
                   </div>
                   <div class="text-caption text-grey">
                     {{ item.user.username }}
@@ -145,16 +142,12 @@
 </template>
 
 <script setup lang="ts">
-interface User {
-  id: string;
-  username: string;
-  displayName?: string;
-}
+import type { IUserApi, IUserPopulated } from "~/types";
 
 interface Permission {
   userId: string;
   accessLevel: "view" | "edit";
-  user: User;
+  user: IUserPopulated;
 }
 
 interface Calendar {
@@ -180,7 +173,7 @@ const loading = ref(false);
 const addingPermission = ref(false);
 const removingPermission = ref<string | null>(null);
 const errorMessage = ref("");
-const users = ref<User[]>([]);
+const users = ref<IUserApi[]>([]);
 
 const newPermission = ref({
   userId: "",
@@ -202,16 +195,11 @@ const availableUsers = computed(() => {
   if (!props.calendar) return users.value;
 
   const assignedUserIds = props.calendar.permissions.map(p => p.userId);
-  return users.value.filter(user => !assignedUserIds.includes(user.id));
+  return users.value.filter(user => !assignedUserIds.includes(user._id));
 });
 
 const fetchUsers = async () => {
-  try {
-    const response = await $fetch<{ users: User[] }>("/api/users");
-    users.value = response.users;
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
-  }
+  users.value = await fetchAllUsers();
 };
 
 const addPermission = async () => {

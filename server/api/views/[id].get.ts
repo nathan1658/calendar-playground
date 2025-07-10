@@ -14,7 +14,7 @@ export default defineEventHandler(async event => {
 
   const view = (await View.findById(id)
     .populate("selectedCalendarIds", "name category")
-    .populate("createdBy", "username displayName")) as PopulatedView | null;
+    .populate("createdBy", "username name")) as PopulatedView | null;
 
   if (!view) {
     throw createError({
@@ -36,11 +36,7 @@ export default defineEventHandler(async event => {
       })),
       columnCount: view.columnCount,
       paddingPx: view.paddingPx,
-      createdBy: {
-        id: view.createdBy._id.toString(),
-        username: view.createdBy.username,
-        displayName: view.createdBy.displayName,
-      },
+      createdBy: view.createdBy,
       createdAt: view.createdAt,
       updatedAt: view.updatedAt,
     },

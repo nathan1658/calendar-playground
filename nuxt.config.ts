@@ -6,25 +6,14 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true,
   },
-  modules: [
-    "@pinia/nuxt",
-    "@vueuse/nuxt",
-    "@nuxtjs/i18n",
-    "@nuxt/eslint",
-    "vuetify-nuxt-module",
-    "@sidebase/nuxt-auth",
-  ],
+  modules: [],
   typescript: {
     strict: true,
   },
-  extends: ["../hksh-auth-layer"],
+  extends: [["github:wongwong25/hksh-nuxt-base-layer#master", { forceClean: true }]],
   auth: {
-    provider: {
-      type: "authjs",
-    },
     globalAppMiddleware: false,
   },
-
   runtimeConfig: {
     // Private keys (only available on server-side)
     mongodbUri: process.env.MONGODB_URI,
@@ -33,16 +22,11 @@ export default defineNuxtConfig({
     initialAdminPassword: process.env.INITIAL_ADMIN_PASSWORD || "password",
   },
   i18n: {
-    langDir: "./locales",
-    defaultLocale: "zh-tc",
     locales: [
+      { code: "en", file: "en.ts", dir: "ltr" },
       { code: "zh-tc", file: "zh-tc.ts", dir: "ltr" },
       { code: "zh-sc", file: "zh-sc.ts", dir: "ltr" },
-      { code: "en", file: "en.ts", dir: "ltr" },
     ],
-    detectBrowserLanguage: {
-      fallbackLocale: "zh-tc",
-    },
     strategy: "no_prefix",
   },
 });

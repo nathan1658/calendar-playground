@@ -18,8 +18,8 @@ export default defineEventHandler(async event => {
 
   // Find calendar
   const calendar = (await Calendar.findById(calendarId)
-    .populate("ownerId", "username displayName")
-    .populate("permissions.userId", "username displayName")) as PopulatedCalendar | null;
+    .populate("ownerId", "username name")
+    .populate("permissions.userId", "username name")) as PopulatedCalendar | null;
 
   if (!calendar) {
     throw createError({
@@ -34,21 +34,11 @@ export default defineEventHandler(async event => {
       name: calendar.name,
       category: calendar.category,
       ownerId: calendar.ownerId?._id?.toString(),
-      owner: calendar.ownerId
-        ? {
-            id: calendar.ownerId._id.toString(),
-            username: calendar.ownerId.username,
-            displayName: calendar.ownerId.displayName,
-          }
-        : null,
+      owner: calendar.ownerId,
       permissions: calendar.permissions.map(perm => ({
         userId: perm.userId._id.toString(),
         accessLevel: perm.accessLevel,
-        user: {
-          id: perm.userId._id.toString(),
-          username: perm.userId.username,
-          displayName: perm.userId.displayName,
-        },
+        user: perm.userId,
       })),
       isPublic: calendar.isPublic,
       createdAt: calendar.createdAt,

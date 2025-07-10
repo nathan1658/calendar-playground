@@ -71,12 +71,12 @@
                 <VChip
                   v-if="item.owner"
                   size="small"
-                  :color="item.owner.id === currentUserId ? 'primary' : 'default'"
+                  :color="item.owner._id === currentUserId ? 'primary' : 'default'"
                   variant="outlined"
                 >
-                  {{ item.owner.displayName || item.owner.username }}
+                  {{ item.owner.name || item.owner.username }}
                   <VTooltip
-                    v-if="item.owner.id === currentUserId"
+                    v-if="item.owner._id === currentUserId"
                     activator="parent"
                     location="top"
                   >
@@ -132,7 +132,7 @@
                     </VTooltip>
                   </VBtn>
                   <VBtn
-                    v-if="isAdmin || item.owner?.id === currentUserId"
+                    v-if="isAdmin || item.owner?._id === currentUserId"
                     icon="mdi-cog"
                     size="small"
                     variant="text"
@@ -195,28 +195,21 @@
         </VCard>
       </VCol>
     </VRow>
-
   </VContainer>
 </template>
 
 <script setup lang="ts">
+import type { IUserPopulated } from "~/types";
+
 interface CalendarApiResponse {
   id: string;
   name: string;
   category?: string;
-  owner?: {
-    id: string;
-    username: string;
-    displayName?: string;
-  };
+  owner?: IUserPopulated;
   permissions: Array<{
     userId: string;
     accessLevel: "view" | "edit";
-    user: {
-      id: string;
-      username: string;
-      displayName?: string;
-    };
+    user: IUserPopulated;
   }>;
   createdAt: string;
   updatedAt: string;
@@ -233,14 +226,11 @@ definePageMeta({
 });
 
 // Auth composable
-const { data } = useAuth();
-const sessionData = data as unknown as {
-  user: { id: string; username: string; displayName?: string; roles: string[] };
-} | null;
+const { data: sessionData } = useAuth();
 
 // Computed properties
-const currentUserId = computed(() => sessionData?.user?.id);
-const isAdmin = computed(() => sessionData?.user?.roles?.includes("admin") || false);
+const currentUserId = computed(() => sessionData.value?.user?.id);
+const isAdmin = computed(() => sessionData.value?.user?.roles?.includes("admin") || false);
 
 // Reactive state
 const calendars = ref<Calendar[]>([]);
@@ -274,7 +264,7 @@ const fetchCalendars = async () => {
 };
 
 const getMyAccessLevel = (calendar: CalendarApiResponse): "owner" | "edit" | "view" => {
-  if (calendar.owner?.id === currentUserId.value) {
+  if (calendar.owner?._id === currentUserId.value) {
     return "owner";
   }
 
@@ -333,7 +323,6 @@ const manageCalendar = (calendar: Calendar) => {
     navigateTo(`/admin/calendars/${calendar.id}`);
   }
 };
-
 
 // Set page head
 useHead({
