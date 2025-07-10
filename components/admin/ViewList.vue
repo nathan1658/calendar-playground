@@ -284,7 +284,7 @@ const fetchViews = async () => {
     views.value = response.views;
   } catch (error) {
     console.error("Failed to fetch views:", error);
-    snackbarStore.error("Error", "Failed to load views");
+    snackbarStore.showError("Failed to load views");
   } finally {
     loading.value = false;
   }
@@ -330,12 +330,12 @@ const confirmDelete = async () => {
       method: "DELETE",
     });
 
-    snackbarStore.success("Success", "View deleted successfully");
+    snackbarStore.showSuccess("View deleted successfully");
     showDeleteDialog.value = false;
     await fetchViews();
   } catch (error) {
     console.error("Failed to delete view:", error);
-    snackbarStore.error("Error", "Failed to delete view");
+    snackbarStore.showError("Failed to delete view");
   } finally {
     deleting.value = false;
   }

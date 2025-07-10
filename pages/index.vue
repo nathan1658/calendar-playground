@@ -376,10 +376,10 @@ const checkViewParameter = async () => {
         title: `${view.name} - Calendar`,
       });
 
-      snackbarStore.success("Success", `Loaded view: ${view.name}`);
+      snackbarStore.showSuccess(`Loaded view: ${view.name}`);
     } catch (error) {
       console.error("Failed to load view:", error);
-      snackbarStore.error("Error", "Failed to load view configuration");
+      snackbarStore.showError("Failed to load view configuration");
     }
   }
 };
@@ -427,7 +427,7 @@ const loadEvents = async () => {
     console.error("Failed to load events:", error);
     // For non-authenticated users, show a gentler message or just empty state
     if (isLoggedIn.value) {
-      snackbarStore.error("Error", "Failed to load events");
+      snackbarStore.showError("Failed to load events");
     }
   } finally {
     isLoading.value = false;
@@ -465,7 +465,7 @@ const loadCalendars = async () => {
     console.error("Failed to load calendars:", error);
     // For non-authenticated users, show a gentler message or just empty state
     if (isLoggedIn.value) {
-      snackbarStore.error("Error", "Failed to load calendars");
+      snackbarStore.showError("Failed to load calendars");
     }
   }
 };
@@ -518,10 +518,10 @@ const handleEventDrop = async (eventId: string, newStart: Date, newEnd: Date) =>
 
   try {
     await updateEventDates(eventId, newStart, newEnd);
-    snackbarStore.success("Success", "Event updated successfully");
+    snackbarStore.showSuccess("Event updated successfully");
     await loadEvents(); // Refresh events
   } catch {
-    snackbarStore.error("Error", "Failed to update event");
+    snackbarStore.showError("Failed to update event");
     // Revert the change by reloading events
     await loadEvents();
   }
@@ -540,16 +540,16 @@ const handleEventSubmit = async (eventData: EventData) => {
 
     if (modalMode.value === "create") {
       await createEvent(eventData);
-      snackbarStore.success("Success", "Event created successfully");
+      snackbarStore.showSuccess("Event created successfully");
     } else if (eventData.id) {
       await updateEvent(eventData.id, eventData);
-      snackbarStore.success("Success", "Event updated successfully");
+      snackbarStore.showSuccess("Event updated successfully");
     }
 
     showEventModal.value = false;
     await loadEvents(); // Refresh events
   } catch {
-    snackbarStore.error("Error", modalMode.value === "create" ? "Failed to create event" : "Failed to update event");
+    snackbarStore.showError(modalMode.value === "create" ? "Failed to create event" : "Failed to update event");
   } finally {
     isLoading.value = false;
   }
@@ -561,11 +561,11 @@ const handleEventDelete = async (eventId: string) => {
   try {
     isLoading.value = true;
     await deleteEvent(eventId);
-    snackbarStore.success("Success", "Event deleted successfully");
+    snackbarStore.showSuccess("Event deleted successfully");
     showEventModal.value = false;
     await loadEvents(); // Refresh events
   } catch {
-    snackbarStore.error("Error", "Failed to delete event");
+    snackbarStore.showError("Failed to delete event");
   } finally {
     isLoading.value = false;
   }

@@ -143,13 +143,6 @@
       <slot />
     </VMain>
 
-    <!-- Global Snackbar Notifications -->
-    <SnackbarNotification
-      v-for="snackbar in snackbarStore.snackbars"
-      :key="snackbar.id"
-      v-bind="snackbar"
-    />
-
     <LoginDialog
       v-model="loginDialog"
       @success="handleLoginSuccess"
@@ -169,7 +162,7 @@ const openLoginDialog = () => {
 
 const handleLoginSuccess = (message?: string) => {
   if (message) {
-    snackbarStore.success("Login Successful", message, { timeout: 4000 });
+    snackbarStore.showSuccess(message, 4000);
   }
 };
 

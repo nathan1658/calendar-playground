@@ -254,7 +254,7 @@ const loadEvents = async () => {
     const events = await getAggregatedEvents();
     calendarEvents.value = events.map(formatEventForCalendar);
   } catch {
-    snackbarStore.error("Error", "Failed to load events");
+    snackbarStore.showError("Failed to load events");
   } finally {
     isLoading.value = false;
   }
@@ -283,7 +283,7 @@ const loadCalendars = async () => {
       defaultCalendarId.value = availableCalendars.value[0].id;
     }
   } catch {
-    snackbarStore.error("Error", "Failed to load calendars");
+    snackbarStore.showError("Failed to load calendars");
   }
 };
 
@@ -341,10 +341,10 @@ const handleDateSelect = (start: Date, end: Date, allDay: boolean) => {
 const handleEventDrop = async (eventId: string, newStart: Date, newEnd: Date) => {
   try {
     await updateEventDates(eventId, newStart, newEnd);
-    snackbarStore.success("Success", "Event updated successfully");
+    snackbarStore.showSuccess("Event updated successfully");
     await loadEvents(); // Refresh events
   } catch {
-    snackbarStore.error("Error", "Failed to update event");
+    snackbarStore.showError("Failed to update event");
     // Revert the change by reloading events
     await loadEvents();
   }
@@ -360,16 +360,16 @@ const handleEventSubmit = async (eventData: EventData) => {
 
     if (modalMode.value === "create") {
       await createEvent(eventData);
-      snackbarStore.success("Success", "Event created successfully");
+      snackbarStore.showSuccess("Event created successfully");
     } else if (eventData.id) {
       await updateEvent(eventData.id, eventData);
-      snackbarStore.success("Success", "Event updated successfully");
+      snackbarStore.showSuccess("Event updated successfully");
     }
 
     showEventModal.value = false;
     await loadEvents(); // Refresh events
   } catch {
-    snackbarStore.error("Error", modalMode.value === "create" ? "Failed to create event" : "Failed to update event");
+    snackbarStore.showError(modalMode.value === "create" ? "Failed to create event" : "Failed to update event");
   } finally {
     isLoading.value = false;
   }
@@ -379,11 +379,11 @@ const handleEventDelete = async (eventId: string) => {
   try {
     isLoading.value = true;
     await deleteEvent(eventId);
-    snackbarStore.success("Success", "Event deleted successfully");
+    snackbarStore.showSuccess("Event deleted successfully");
     showEventModal.value = false;
     await loadEvents(); // Refresh events
   } catch {
-    snackbarStore.error("Error", "Failed to delete event");
+    snackbarStore.showError("Failed to delete event");
   } finally {
     isLoading.value = false;
   }

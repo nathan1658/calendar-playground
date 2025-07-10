@@ -257,7 +257,7 @@ const fetchCalendars = async () => {
       myAccess: getMyAccessLevel(cal),
     }));
   } catch {
-    snackbarStore.error("Error", "Failed to fetch calendars");
+    snackbarStore.showError("Failed to fetch calendars");
   } finally {
     loading.value = false;
   }

@@ -346,13 +346,13 @@ const handleSubmit = async () => {
       body: form.value,
     });
 
-    snackbarStore.success("Success", "View updated successfully");
+    snackbarStore.showSuccess("View updated successfully");
     emit("updated");
     isOpen.value = false;
   } catch (error: unknown) {
     console.error("Failed to update view:", error);
     const message = (error as { data?: { message?: string } }).data?.message || "Failed to update view";
-    snackbarStore.error("Error", message);
+    snackbarStore.showError(message);
   } finally {
     loading.value = false;
   }
@@ -366,7 +366,7 @@ const loadCalendars = async () => {
     availableCalendars.value = response.calendars;
   } catch (error) {
     console.error("Failed to load calendars:", error);
-    snackbarStore.error("Error", "Failed to load calendars");
+    snackbarStore.showError("Failed to load calendars");
   }
 };
 
