@@ -306,8 +306,16 @@ const getCalendarColor = (category?: string): string => {
   return colorMap[category || "default"] || colorMap.default;
 };
 
+const baseUrl = computed(() => {
+  let baseUrl = useRuntimeConfig().app.baseURL;
+  if (baseUrl.endsWith("/")) {
+    baseUrl = baseUrl.slice(0, baseUrl.length - 1);
+  }
+  return baseUrl;
+});
+
 const previewView = (view: ViewData) => {
-  const url = `/?view=${view.alias}`;
+  const url = baseUrl.value + `/?view=${view.alias}`;
   window.open(url, "_blank");
 };
 
