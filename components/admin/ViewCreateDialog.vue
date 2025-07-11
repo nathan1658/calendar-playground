@@ -107,6 +107,8 @@
                   :model-value="allCalendarsSelected"
                   :indeterminate="someCalendarsSelected && !allCalendarsSelected"
                   color="primary"
+                  hide-details
+                  class="mr-1"
                 />
               </template>
               <VListItemTitle>

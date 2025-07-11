@@ -48,10 +48,6 @@ definePageMeta({
   middleware: ["roles-permission-check"],
 });
 
-onMounted(() => {
-  navigateTo("/admin/calendars");
-});
-
 // Set page head
 useHead({
   title: "Admin Dashboard",
