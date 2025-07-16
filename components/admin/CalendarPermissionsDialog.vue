@@ -174,6 +174,7 @@ const addingPermission = ref(false);
 const removingPermission = ref<string | null>(null);
 const errorMessage = ref("");
 const users = ref<IUserApi[]>([]);
+const { getAllUsers } = useUserApi();
 
 const newPermission = ref({
   userId: "",
@@ -199,7 +200,7 @@ const availableUsers = computed(() => {
 });
 
 const fetchUsers = async () => {
-  users.value = await fetchAllUsers();
+  users.value = await getAllUsers();
 };
 
 const addPermission = async () => {

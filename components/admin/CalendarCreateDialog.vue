@@ -220,6 +220,7 @@ const valid = ref(false);
 const loading = ref(false);
 const errorMessage = ref("");
 const users = ref<IUserApi[]>([]);
+const { getAllUsers } = useUserApi();
 
 const form = ref({
   name: "",
@@ -236,7 +237,7 @@ const nameRules = [
 const categoryRules = [(v: string) => !v || v.length <= 50 || "Category must be less than 50 characters"];
 
 const fetchUsers = async () => {
-  users.value = await fetchAllUsers();
+  users.value = await getAllUsers();
 };
 
 const handleSubmit = async () => {
