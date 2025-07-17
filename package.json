@@ -19,6 +19,7 @@
     "@fullcalendar/daygrid": "^6.1.17",
     "@fullcalendar/interaction": "^6.1.17",
     "@fullcalendar/list": "^6.1.17",
+    "@fullcalendar/moment-timezone": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
     "@fullcalendar/vue3": "^6.1.17",
     "@nuxt/eslint": "^0.6.1",

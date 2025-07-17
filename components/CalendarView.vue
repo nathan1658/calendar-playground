@@ -16,9 +16,11 @@ import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
+import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { CalendarOptions, DateSelectArg, EventDropArg, EventApi } from "@fullcalendar/core";
 import type { IUserPopulated } from "~/types";
+import moment from "moment-timezone";
 
 export interface CalendarEvent {
   id: string;
@@ -68,14 +70,15 @@ const emit = defineEmits<Emits>();
 const calendarRef = ref<InstanceType<typeof FullCalendar>>();
 
 const calendarOptions = computed<CalendarOptions>(() => ({
-  plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+  timeZone: "HongKong",
+  plugins: [momentTimezonePlugin, dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
   initialView: props.initialView,
   height: props.height,
   events: props.events.map(event => ({
     id: event.id,
     title: event.title,
     start: event.start,
-    end: event.end,
+    end: event.allDay ? moment.tz(event.end, "HongKong").add(1, "d").startOf("d").toISOString() : event.end,
     allDay: event.allDay || false,
     backgroundColor: event.backgroundColor || "#3B82F6",
     borderColor: event.borderColor || "#3B82F6",
@@ -136,7 +139,7 @@ const handleEventClick = (info: { event: EventApi }) => {
     id: event.id,
     title: event.title,
     start: event.start!,
-    end: event.end!,
+    end: event.allDay ? moment.tz(event.end!, "HongKong").add(-1, "d").endOf("d").toISOString() : event.end!,
     allDay: event.allDay,
     backgroundColor: event.backgroundColor,
     borderColor: event.borderColor,

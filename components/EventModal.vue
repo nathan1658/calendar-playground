@@ -66,7 +66,7 @@
                   <strong>{{ formatDate(formData.startDate) }}</strong>
                   <span
                     v-if="!formData.allDay"
-                    class="ml-2"
+                    class="ml-1"
                   >
                     at {{ formatTime(formData.startTime) }}
                   </span>
@@ -84,7 +84,7 @@
                   <strong>{{ formatDate(formData.endDate) }}</strong>
                   <span
                     v-if="!formData.allDay"
-                    class="ml-2"
+                    class="ml-1"
                   >
                     at {{ formatTime(formData.endTime) }}
                   </span>
@@ -435,6 +435,7 @@
 </template>
 
 <script setup lang="ts">
+import moment from "moment-timezone";
 import BaseDialog from "~/components/base/BaseDialog.vue";
 import type { EventModalMode } from "~/types";
 
@@ -555,30 +556,30 @@ const endTimeRules = [
 const initializeForm = () => {
   if (props.event) {
     // Edit mode - populate with existing event data
-    const startDate = new Date(props.event.startTime);
-    const endDate = new Date(props.event.endTime);
+    const startDate = moment.tz(props.event.startTime, "HongKong");
+    const endDate = moment.tz(props.event.endTime, "HongKong");
 
     formData.subject = props.event.subject;
     formData.description = props.event.description || "";
     formData.calendarId = props.event.calendarId;
     formData.allDay = props.event.allDay;
-    formData.startDate = startDate.toISOString().split("T")[0];
-    formData.endDate = endDate.toISOString().split("T")[0];
-    formData.startTime = startDate.toTimeString().slice(0, 5);
-    formData.endTime = endDate.toTimeString().slice(0, 5);
+    formData.startDate = startDate.format("YYYY-MM-DD");
+    formData.endDate = endDate.format("YYYY-MM-DD");
+    formData.startTime = startDate.format("HH:mm");
+    formData.endTime = endDate.format("HH:mm");
   } else {
     // Create mode - use defaults
-    const startDate = props.defaultStartTime;
-    const endDate = props.defaultEndTime;
+    const startDate = moment.tz(props.defaultStartTime, "HongKong");
+    const endDate = moment.tz(props.defaultEndTime, "HongKong");
 
     formData.subject = "";
     formData.description = "";
     formData.calendarId = props.defaultCalendarId;
     formData.allDay = props.defaultAllDay;
-    formData.startDate = startDate.toISOString().split("T")[0];
-    formData.endDate = endDate.toISOString().split("T")[0];
-    formData.startTime = startDate.toTimeString().slice(0, 5);
-    formData.endTime = endDate.toTimeString().slice(0, 5);
+    formData.startDate = startDate.format("YYYY-MM-DD");
+    formData.endDate = endDate.format("YYYY-MM-DD");
+    formData.startTime = startDate.format("HH:mm");
+    formData.endTime = endDate.format("HH:mm");
   }
 };
 
@@ -756,25 +757,12 @@ const getDialogIcon = () => {
 // Helper functions for read mode view
 const formatDate = (dateString: string): string => {
   if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  return moment.tz(dateString, "HongKong").format("dddd, MMMM Do YYYY");
 };
 
 const formatTime = (timeString: string): string => {
   if (!timeString) return "";
-  const [hours, minutes] = timeString.split(":");
-  const date = new Date();
-  date.setHours(parseInt(hours), parseInt(minutes));
-  return date.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  return moment.tz(timeString, "HH:mm", "HongKong").format("h:mm a");
 };
 
 // Computed properties for read mode view
