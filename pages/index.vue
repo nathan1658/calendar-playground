@@ -3,7 +3,7 @@
     <VContainer fluid>
       <!-- Top Toolbar -->
       <VCard
-        v-if="isAdmin"
+        v-if="isAdmin || editableCalendars.length > 0"
         class="mb-4"
       >
         <VCardText>
@@ -11,77 +11,78 @@
             align="center"
             dense
           >
-            <!-- Calendar Selection -->
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <VSelect
-                v-model="selectedCalendarIds"
-                :items="availableCalendars"
-                item-title="name"
-                item-value="id"
-                label="Select Calendars"
-                multiple
-                chips
-                closable-chips
-                density="compact"
-                variant="outlined"
+            <template v-if="isAdmin">
+              <!-- Calendar Selection -->
+              <VCol
+                cols="12"
+                sm="6"
+                md="4"
               >
-                <template #prepend-item>
-                  <VListItem @click="toggleAllCalendars">
-                    <template #prepend>
-                      <VCheckbox
-                        :model-value="allCalendarsSelected"
-                        :indeterminate="someCalendarsSelected && !allCalendarsSelected"
-                        color="primary"
-                      />
-                    </template>
-                    <VListItemTitle>
-                      {{ allCalendarsSelected ? "Deselect All" : "Select All" }}
-                    </VListItemTitle>
-                  </VListItem>
-                  <VDivider />
-                </template>
-              </VSelect>
-            </VCol>
+                <VSelect
+                  v-model="selectedCalendarIds"
+                  :items="availableCalendars"
+                  item-title="name"
+                  item-value="id"
+                  label="Select Calendars"
+                  multiple
+                  chips
+                  closable-chips
+                  density="compact"
+                  variant="outlined"
+                >
+                  <template #prepend-item>
+                    <VListItem @click="toggleAllCalendars">
+                      <template #prepend>
+                        <VCheckbox
+                          :model-value="allCalendarsSelected"
+                          :indeterminate="someCalendarsSelected && !allCalendarsSelected"
+                          color="primary"
+                        />
+                      </template>
+                      <VListItemTitle>
+                        {{ allCalendarsSelected ? "Deselect All" : "Select All" }}
+                      </VListItemTitle>
+                    </VListItem>
+                    <VDivider />
+                  </template>
+                </VSelect>
+              </VCol>
 
-            <!-- Column Count -->
-            <VCol
-              cols="6"
-              sm="3"
-              md="2"
-            >
-              <VSelect
-                v-model="columnCount"
-                :items="columnOptions"
-                label="Columns"
-                density="compact"
-                variant="outlined"
-              />
-            </VCol>
+              <!-- Column Count -->
+              <VCol
+                cols="6"
+                sm="3"
+                md="2"
+              >
+                <VSelect
+                  v-model="columnCount"
+                  :items="columnOptions"
+                  label="Columns"
+                  density="compact"
+                  variant="outlined"
+                />
+              </VCol>
 
-            <!-- Padding -->
-            <VCol
-              cols="6"
-              sm="3"
-              md="2"
-            >
-              <VTextField
-                v-model.number="paddingPx"
-                label="Padding (px)"
-                type="number"
-                min="0"
-                max="50"
-                density="compact"
-                variant="outlined"
-              />
-            </VCol>
-
+              <!-- Padding -->
+              <VCol
+                cols="6"
+                sm="3"
+                md="2"
+              >
+                <VTextField
+                  v-model.number="paddingPx"
+                  label="Padding (px)"
+                  type="number"
+                  min="0"
+                  max="50"
+                  density="compact"
+                  variant="outlined"
+                />
+              </VCol>
+            </template>
             <!-- New Event Button -->
             <VCol
-              v-if="isAdmin"
+              v-if="editableCalendars.length > 0"
               cols="auto"
               class="ml-auto"
             >
@@ -270,7 +271,12 @@ const selectedCalendars = computed(() => {
 
 const editableCalendars = computed(() => {
   // Show calendars the user can edit
-  return availableCalendars.value.filter(cal => isAdmin.value || selectedCalendarIds.value.includes(cal.id));
+
+  return availableCalendars.value.filter(
+    cal =>
+      isAdmin.value ||
+      (cal.permissions ?? []).some(x => x.accessLevel === "edit" && currentUser.value?.id === x.userId),
+  );
 });
 
 // Calendar color mapping
@@ -437,19 +443,14 @@ const loadEvents = async () => {
 // Load available calendars
 const loadCalendars = async () => {
   try {
-    interface CalendarApiResponse {
-      id: string;
-      name: string;
-      category?: string;
-    }
-
     // For non-authenticated users, try to load public calendars
     const endpoint = isLoggedIn.value ? "/api/calendars" : "/api/public/calendars";
-    const response = await $fetch<{ calendars: CalendarApiResponse[] }>(endpoint);
+    const response = await $fetch<{ calendars: CalendarOption[] }>(endpoint);
     availableCalendars.value = response.calendars.map(cal => ({
       id: cal.id,
       name: cal.name,
       category: cal.category || "default",
+      permissions: cal.permissions || [],
     }));
 
     // Initialize with all calendars selected only if no view parameter
@@ -458,8 +459,8 @@ const loadCalendars = async () => {
       selectedCalendarIds.value = availableCalendars.value.map(cal => cal.id);
     }
 
-    if (availableCalendars.value.length > 0) {
-      defaultCalendarId.value = availableCalendars.value[0].id;
+    if (editableCalendars.value.length > 0) {
+      defaultCalendarId.value = editableCalendars.value[0].id;
     }
   } catch (error) {
     console.error("Failed to load calendars:", error);
@@ -497,7 +498,7 @@ const handleEventClick = (event: CalendarEvent) => {
     endTime: new Date(event.end),
     allDay: event.allDay || false,
   };
-  modalMode.value = isLoggedIn.value ? "edit" : "read";
+  modalMode.value = editableCalendars.value.some(x => x.id === event.extendedProps?.calendarId) ? "edit" : "read";
   showEventModal.value = true;
 };
 

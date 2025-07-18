@@ -1,8 +1,7 @@
 <template>
   <VDialog
-    :model-value="modelValue"
+    v-model="modelValue"
     max-width="800"
-    @update:model-value="$emit('update:modelValue', $event)"
   >
     <VCard>
       <VCardTitle>Manage Permissions - {{ calendar?.name }}</VCardTitle>
@@ -157,17 +156,16 @@ interface Calendar {
 }
 
 interface Props {
-  modelValue: boolean;
   calendar: Calendar | null;
 }
 
 interface Emits {
-  (e: "update:modelValue", value: boolean): void;
   (e: "updated"): void;
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+const modelValue = defineModel<boolean>();
 
 const loading = ref(false);
 const addingPermission = ref(false);
@@ -224,6 +222,7 @@ const addPermission = async () => {
     };
 
     emit("updated");
+    handleClose();
   } catch (error: unknown) {
     if (error && typeof error === "object" && "data" in error) {
       errorMessage.value = (error as { data?: { message?: string } }).data?.message || "Failed to add permission";
@@ -247,6 +246,7 @@ const removePermission = async (userId: string) => {
     });
 
     emit("updated");
+    handleClose();
   } catch (error: unknown) {
     if (error && typeof error === "object" && "data" in error) {
       errorMessage.value = (error as { data?: { message?: string } }).data?.message || "Failed to remove permission";
@@ -264,16 +264,13 @@ const handleClose = () => {
     userId: "",
     accessLevel: "",
   };
-  emit("update:modelValue", false);
+  modelValue.value = false;
 };
 
 // Fetch users when dialog opens
-watch(
-  () => props.modelValue,
-  newValue => {
-    if (newValue) {
-      fetchUsers();
-    }
-  },
-);
+watch(modelValue, newValue => {
+  if (newValue) {
+    fetchUsers();
+  }
+});
 </script>

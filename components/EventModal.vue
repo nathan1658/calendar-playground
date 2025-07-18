@@ -270,9 +270,6 @@
                   />
                 </VAvatar>
               </template>
-              <VListItemTitle class="font-weight-medium">
-                {{ item.raw.name }}
-              </VListItemTitle>
             </VListItem>
           </template>
         </VSelect>
@@ -454,6 +451,10 @@ export interface CalendarOption {
   id: string;
   name: string;
   category?: string;
+  permissions?: {
+    userId: string;
+    accessLevel: "view" | "edit";
+  }[];
 }
 
 export interface EventData {
@@ -598,11 +599,11 @@ const handleSubmit = async () => {
     let endDateTime: Date;
 
     if (formData.allDay) {
-      startDateTime = new Date(formData.startDate + "T00:00:00");
-      endDateTime = new Date(formData.endDate + "T23:59:59");
+      startDateTime = moment.tz(formData.startDate + "T00:00:00", "HongKong").toDate();
+      endDateTime = moment.tz(formData.endDate + "T23:59:59", "HongKong").toDate();
     } else {
-      startDateTime = new Date(formData.startDate + "T" + formData.startTime);
-      endDateTime = new Date(formData.endDate + "T" + formData.endTime);
+      startDateTime = moment.tz(formData.startDate + "T" + formData.startTime, "HongKong").toDate();
+      endDateTime = moment.tz(formData.endDate + "T" + formData.endTime, "HongKong").toDate();
     }
 
     const eventData: EventData = {

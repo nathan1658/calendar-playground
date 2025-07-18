@@ -107,7 +107,10 @@
                 <VCol>
                   <h2>Calendar</h2>
                 </VCol>
-                <VCol cols="auto">
+                <VCol
+                  v-if="editableCalendars.length > 0"
+                  cols="auto"
+                >
                   <VBtn
                     color="primary"
                     @click="openCreateModal"
@@ -169,6 +172,7 @@ import EventModal from "~/components/EventModal.vue";
 import type { CalendarEvent } from "~/components/CalendarView.vue";
 import type { EventData, CalendarOption } from "~/components/EventModal.vue";
 import { useEvents } from "~/composables/useEvents";
+import type { EventModalMode } from "~/types";
 
 // Page metadata
 definePageMeta({
@@ -196,7 +200,7 @@ const { getAggregatedEvents, createEvent, updateEvent, deleteEvent, formatEventF
 const calendarRef = ref();
 const showEventModal = ref(false);
 const selectedEvent = ref<EventData | null>(null);
-const modalMode = ref<"create" | "edit">("create");
+const modalMode = ref<EventModalMode>("create");
 const calendarEvents = ref<CalendarEvent[]>([]);
 const availableCalendars = ref<CalendarOption[]>([]);
 const selectedCalendarIds = ref<string[]>([]);
@@ -216,7 +220,11 @@ const allCalendarsSelected = computed(() => {
 
 const editableCalendars = computed(() => {
   // Show calendars the user can edit
-  return availableCalendars.value.filter(cal => isAdmin.value || selectedCalendarIds.value.includes(cal.id));
+  return availableCalendars.value.filter(
+    cal =>
+      isAdmin.value ||
+      (cal.permissions ?? []).some(x => x.accessLevel === "edit" && currentUser.value?.id === x.userId),
+  );
 });
 
 const filteredCalendarEvents = computed(() => {
@@ -263,17 +271,12 @@ const loadEvents = async () => {
 // Load available calendars
 const loadCalendars = async () => {
   try {
-    interface CalendarApiResponse {
-      id: string;
-      name: string;
-      category?: string;
-    }
-
-    const response = await $fetch<{ calendars: CalendarApiResponse[] }>("/api/calendars");
+    const response = await $fetch<{ calendars: CalendarOption[] }>("/api/calendars");
     availableCalendars.value = response.calendars.map(cal => ({
       id: cal.id,
       name: cal.name,
       category: cal.category || "default",
+      permissions: cal.permissions || [],
     }));
 
     // Initialize with all calendars selected
@@ -327,7 +330,7 @@ const handleEventClick = (event: CalendarEvent) => {
     endTime: new Date(event.end),
     allDay: event.allDay || false,
   };
-  modalMode.value = "edit";
+  modalMode.value = editableCalendars.value.some(x => x.id === event.extendedProps?.calendarId) ? "edit" : "read";
   showEventModal.value = true;
 };
 
